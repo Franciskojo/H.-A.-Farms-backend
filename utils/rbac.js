@@ -12,7 +12,7 @@ export const permissions = [
     
 
     {
-        role: "adminstrator",
+        role: "admin",
         actions: [
              "get_profile",
             "update_profile",

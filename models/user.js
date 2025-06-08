@@ -28,11 +28,12 @@ userSchema.virtual("confirmPassword").set(function (value) {
 });
 // Custom validation for password confirmation
 userSchema.pre("save", function (next) {
-  if (this.password === this._confirmPassword) {
+  if (this.password !== this._confirmPassword) {
     return next(new Error("Passwords do not match"));
   }
   next();
 });
+
 
 // Plugin for converting MongoDB data to JSON
 userSchema.plugin(toJSON);
