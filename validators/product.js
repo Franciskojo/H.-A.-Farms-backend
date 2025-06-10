@@ -9,12 +9,6 @@ export const variantValidator = Joi.object({
   isDefault: Joi.boolean().default(false)
 });
 
-// Image validation schema
-export const imageValidator = Joi.object({
-  url: Joi.string().uri().required(),
-  altText: Joi.string().allow('').default(''),
-  isPrimary: Joi.boolean().default(false)
-});
 
 // Product validation schema
 export const productValidator = Joi.object({
@@ -22,14 +16,12 @@ export const productValidator = Joi.object({
   description: Joi.string().trim().required(),
   price: Joi.number().min(0).required(),
   quantity: Joi.number().min(0).default(0),
+  productImage: Joi.string().trim().required,
 
   category: Joi.string().valid('premium eggs', 'premium chicken', 'farm Inputs').required(),
-//   tags: Joi.array().items(Joi.string()).default([]),
+  // tags: Joi.array().items(Joi.string()).default([]),
 
   status: Joi.string().valid('draft', 'active', 'archived').default('draft'),
-
-  images: Joi.array().items(imageValidator).max(5).default([]),
-
   variants: Joi.array().items(variantValidator).default(() => [{
     name: 'Default Variant',
     price: 0,
@@ -43,7 +35,7 @@ export const productValidator = Joi.object({
 
 export const updateProductValidator = Joi.object({
     productName: Joi.string(),
-    images: Joi.array().items(imageValidator).max(5).default([]),
+    productImage: Joi.string().trim().optional().allow(null, ''),
     description: Joi.string(),
     price: Joi.number(),
     category: Joi.string(),

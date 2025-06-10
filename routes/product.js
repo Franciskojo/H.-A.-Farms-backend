@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { imagesUpload } from "../middlewares/cloudinary.js";
+import { imageUpload } from "../middlewares/cloudinary.js";
 import { isAuthenticated, hasPermission } from "../middlewares/auth.js";
 import { addProduct, countProducts, deleteProductById, filterPaginateProducts, getProductById, getProducts, updateProductById } from "../controllers/product.js";
 
@@ -7,7 +7,7 @@ import { addProduct, countProducts, deleteProductById, filterPaginateProducts, g
 const productRouter = Router();
 
 
-productRouter.post("/products", isAuthenticated, hasPermission("add_product"), imagesUpload.array("images"), addProduct);
+productRouter.post("/products", isAuthenticated, hasPermission("add_product"), imageUpload.single("productImage"), addProduct);
 
 
 productRouter.get("/products", getProducts);

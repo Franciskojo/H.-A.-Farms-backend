@@ -18,18 +18,12 @@ export const addProduct = async (req, res, next) => {
             return res.status(422).json({ error: error.details[0].message });
         }
 
-        // ✅ Process uploaded images
-        const imageObjects = req.files?.map(file => ({
-            url: `/uploads/${file.filename}`,
-            altText: '',
-            isPrimary: false
-        })) || [];
-
         // ✅ Create product
+        const productImageUrl = req.file?.path;
         const product = await ProductModel.create({
             ...value,
-            images: imageObjects,
-            createdBy: req.auth?.id || null
+            productImage: productImageUrl || value.productImage,
+            createdBy: req.auth.id?.id
         });
 
         res.status(201).json({
