@@ -28,14 +28,14 @@ const storage = new CloudinaryStorage({
 const imageStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "assetsImage",
+    folder: "images",
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'tiff', 'svg'],
     public_id: (req, file) => `image-${Date.now()}`
   }
 });
 
 export const upload = multer({ storage });
-export const productImageUpload = multer({ storage: imageStorage });
+export const imagesUpload = multer({ storage: imageStorage });
 
 
 
