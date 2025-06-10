@@ -19,7 +19,7 @@ const productSchema = new Schema({
     required: true,
     enum: ['premium eggs', 'premium chicken', 'farm Inputs']
   },
-  tags: { type: [String], default: [] },
+  // tags: { type: [String], default: [] },
   status: {
     type: String,
     enum: ['draft', 'active', 'archived'],
