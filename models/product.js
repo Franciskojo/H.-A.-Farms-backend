@@ -3,7 +3,7 @@ import { toJSON } from "@reis/mongoose-to-json";
 
 const variantSchema = new Schema({
   variantName: { type: String, required: true, trim: true },
-  price: { type: Number, required: true, min: 0 },
+  variantPrice: { type: Number, required: true, min: 0 },
   sku: { type: String, trim: true },
   quantity: { type: Number, default: 0, min: 0 },
   isDefault: { type: Boolean, default: false }
@@ -31,7 +31,7 @@ const productSchema = new Schema({
     type: [variantSchema],
     default: () => [{
       variantName: 'Default Variant',
-      price: 0,
+      variantPrice: 0,
       sku: '',
       quantity: 0,
       isDefault: true

@@ -24,7 +24,7 @@ export const productValidator = Joi.object({
   status: Joi.string().valid('draft', 'active', 'archived').default('draft'),
   variants: Joi.array().items(variantValidator).default(() => [{
     name: 'Default Variant',
-    price: 0,
+    variantPrice: 0,
     sku: '',
     isDefault: true
   }]),
