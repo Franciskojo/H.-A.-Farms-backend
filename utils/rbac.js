@@ -5,7 +5,11 @@ export const permissions = [
             "get_profile",
             "get_products",
             "get_product_by_id",
-            "update_profile"
+            "update_profile",
+            "get_cart",
+            "remove_cart",
+            "clear_cart",
+            "add_to_cart"
             
         ]
     },
@@ -21,8 +25,8 @@ export const permissions = [
             "get_product_by_id",
             "get_products",
             "delete_product",
-            // "download_assets_csv",
-            // "download_assets_xlsx",
+            "download_orders_csv",
+            "download_oders_xlsx",
             "get_reports",
             "add_user",
             "update_user",
@@ -32,6 +36,10 @@ export const permissions = [
             "change_password",
             "change_email",
             "count_products",
+            "get_cart",
+            "remove_cart",
+            "clear_cart",
+            "add_to_cart"
         ]
     }
 ]
