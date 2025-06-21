@@ -23,16 +23,16 @@ const userSchema = new Schema({
 )
 
 // Add a virtual field for confirmPassword
-userSchema.virtual("confirmPassword").set(function (value) {
-  this._confirmPassword = value;
-});
-// Custom validation for password confirmation
-userSchema.pre("save", function (next) {
-  if (this.password !== this._confirmPassword) {
-    return next(new Error("Passwords do not match"));
-  }
-  next();
-});
+// userSchema.virtual("confirmPassword").set(function (value) {
+//   this._confirmPassword = value;
+// });
+// // Custom validation for password confirmation
+// userSchema.pre("save", function (next) {
+//   if (this.password !== this._confirmPassword) {
+//     return next(new Error("Passwords do not match"));
+//   }
+//   next();
+// });
 
 
 // Plugin for converting MongoDB data to JSON

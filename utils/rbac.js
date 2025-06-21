@@ -9,7 +9,10 @@ export const permissions = [
             "get_cart",
             "remove_cart",
             "clear_cart",
-            "add_to_cart"
+            "add_to_cart",
+            "checkout",
+            "get",
+            "get_order_id"
             
         ]
     },

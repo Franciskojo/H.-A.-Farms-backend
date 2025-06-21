@@ -5,6 +5,7 @@ import "dotenv/config"
 import userRouter from "./routes/user.js";
 import productRouter from "./routes/product.js";
 import cartRouter from "./routes/cart.js";
+import orderRouter from "./routes/order.js";
 
 
 // Connect to database
@@ -28,7 +29,8 @@ app.use(express.urlencoded({
 // use routes
 app.use(userRouter)
 app.use(productRouter)
-app.use(cartRouter)
+app.use("/cart", cartRouter)
+app.use(orderRouter)
 
 
 
