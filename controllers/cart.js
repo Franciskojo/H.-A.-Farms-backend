@@ -1,23 +1,31 @@
 import { CartModel } from "../models/cart.js";
+import {ProductModel} from "../models/product.js"; // Adjust import path as needed
+
 
 
 // Add a product to the cart or update its quantity if it already exists in the cart.
+
 export const addToCart = async (req, res, next) => {
-  const { productId, price, quantity, userId } = req.body;
+  const { productId, quantity } = req.body;
+  const userId = req.auth?.id;
 
-  if (!productId || !quantity || !price || quantity < 1) {
-    return res
-      .status(400)
-      .json({ message: "Invalid product ID, price, or quantity." });
+  if (!productId || !quantity || quantity < 1) {
+    return res.status(400).json({ message: "Invalid product ID or quantity." });
   }
-  
-  try {
-    let cart = await CartModel.findOne({ user: userId });
 
+  try {
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+
+    const price = product.price;
+
+    let cart = await CartModel.findOne({ user: userId });
     if (!cart) {
       cart = new CartModel({ user: userId, items: [] });
     }
-  
+
     const itemIndex = cart.items.findIndex(item =>
       item?.product?.toString() === productId
     );
@@ -27,16 +35,15 @@ export const addToCart = async (req, res, next) => {
     } else {
       cart.items.push({ product: productId, price, quantity });
     }
-  
+
     const updatedCart = await cart.save();
-
-    res.status(200).json({ message: "Added to Cart!", cart: updatedCart });
-
+    return res.status(200).json({ message: "Added to cart!", cart: updatedCart });
   } catch (error) {
-    console.error("Error adding to cart:", error);
-    next(error);
+    console.error("🔥 Error adding to cart:", error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
 
 
 
