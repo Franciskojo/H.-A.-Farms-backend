@@ -54,20 +54,28 @@ export const addToCart = async (req, res, next) => {
 // Get all carts for a specific user
 export const getUsertCart = async (req, res, next) => {
   const userId = req.auth?.id;
+
   if (!userId) {
-    return res.status(401).json({ message:'Not authenticated!' });
+    return res.status(401).json({ message: 'Not authenticated!' });
   }
+
   try {
     const cart = await CartModel.findOne({ user: userId }).populate('items.product');
+
+    // ✅ Always return a valid structure
     if (!cart) {
-      return res.status(404).json({ message:'Cart not found.' });
+      return res.status(200).json({ items: [] });
     }
-    res.status(200).json(cart);
+
+    // ✅ Extract only items for frontend
+    return res.status(200).json({ items: cart.items });
   } catch (error) {
-    console.error("Error fetching client cart:", error);
-    next(error);
+    console.error("🔥 Error fetching client cart:", error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error)
   }
 };
+
 
 
 // Remove a product from the cart based on its product ID
