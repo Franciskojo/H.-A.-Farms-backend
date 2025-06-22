@@ -58,7 +58,7 @@ export const getUsertCart = async (req, res, next) => {
     return res.status(401).json({ message:'Not authenticated!' });
   }
   try {
-    const cart = await CartModel.findOne({ user: userId });
+    const cart = await CartModel.findOne({ user: userId }).populate('items.product');
     if (!cart) {
       return res.status(404).json({ message:'Cart not found.' });
     }
