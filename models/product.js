@@ -46,4 +46,4 @@ const productSchema = new Schema({
 productSchema.index({ productName: 'text', description: 'text', tags: 'text' });
 productSchema.plugin(toJSON);
 
-export const ProductModel = model("Products", productSchema);
+export const ProductModel = model("Product", productSchema);
