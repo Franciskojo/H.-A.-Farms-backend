@@ -38,7 +38,7 @@ export const checkout = async (req, res, next) => {
       }
 
       return {
-        productId: product._id,
+        productId: product.id,
         productName: product.name,
         quantity: item.quantity,
         price: product.price,
@@ -49,7 +49,7 @@ export const checkout = async (req, res, next) => {
     // Create and save the order
     const newOrder = new OrderModel({
       userId,
-      cartId: cart._id,
+      cartId: cart.id,
       items,
       shippingAddress: value.shippingAddress,
       billingAddress: value.billingAddress,

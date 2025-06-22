@@ -44,7 +44,7 @@ export const addToCart = async (req, res, next) => {
     const updatedCart = await cart.save();
     return res.status(200).json({ message: "Added to cart!", cart: updatedCart });
   } catch (error) {
-    console.error("🔥 Error adding to cart:", error);
+    console.error("Error adding to cart:", error);
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -62,12 +62,12 @@ export const getUsertCart = async (req, res, next) => {
   try {
     const cart = await CartModel.findOne({ user: userId }).populate('items.product');
 
-    // ✅ Always return a valid structure
+    // Always return a valid structure
     if (!cart) {
       return res.status(200).json({ items: [] });
     }
 
-    // ✅ Extract only items for frontend
+    // Extract only items for frontend
     return res.status(200).json({ items: cart.items });
   } catch (error) {
     console.error("🔥 Error fetching client cart:", error);
