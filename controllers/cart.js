@@ -1,6 +1,6 @@
 import { CartModel } from "../models/cart.js";
 import {ProductModel} from "../models/product.js"; // Adjust import path as needed
-
+import mongoose from 'mongoose';
 
 
 // Add a product to the cart or update its quantity if it already exists in the cart.
@@ -9,8 +9,13 @@ export const addToCart = async (req, res, next) => {
   const { productId, quantity } = req.body;
   const userId = req.auth?.id;
 
-  if (!productId || !quantity || quantity < 1) {
-    return res.status(400).json({ message: "Invalid product ID or quantity." });
+  // Validate presence and format of productId
+  if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+    return res.status(400).json({ message: "Invalid or missing product ID." });
+  }
+
+  if (!quantity || quantity < 1) {
+    return res.status(400).json({ message: "Invalid quantity." });
   }
 
   try {
@@ -43,7 +48,6 @@ export const addToCart = async (req, res, next) => {
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
-
 
 
 
