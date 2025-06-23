@@ -1,19 +1,19 @@
 import mongoose from "mongoose";
 import { OrderModel } from "../models/order.js";
 import { CartModel } from "../models/cart.js";
-import { checkoutSchema } from "../validators/order.js"; // ✅ Make sure this exists
+// import { checkoutSchema } from "../validators/order.js"; // ✅ Make sure this exists
 
 export const checkout = async (req, res, next) => {
   const userId = req.auth?.id;
 
-  // ✅ Validate request body using Joi
-  const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    return res.status(400).json({
-      message: "Validation failed",
-      errors: error.details.map((detail) => detail.message)
-    });
-  }
+  // // ✅ Validate request body using Joi
+  // const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
+  // if (error) {
+  //   return res.status(400).json({
+  //     message: "Validation failed",
+  //     errors: error.details.map((detail) => detail.message)
+  //   });
+  // }
 
   const session = await mongoose.startSession();
 
