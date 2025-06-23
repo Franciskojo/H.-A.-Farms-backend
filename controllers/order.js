@@ -1,27 +1,27 @@
 import mongoose from "mongoose";
 import { OrderModel } from "../models/order.js";
 import { CartModel } from "../models/cart.js";
-//  import { checkoutSchema } from "../validators/order.js";
+import { checkoutSchema } from "../validators/order.js"; // ✅ Make sure this exists
 
 export const checkout = async (req, res, next) => {
   const userId = req.auth?.id;
 
-  // // ✅ 1. Validate input
-  // const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
-  // if (error) {
-  //   return res.status(400).json({
-  //     message: "Validation failed",
-  //     errors: error.details.map((detail) => detail.message)
-  //   });
-  // }
+  // ✅ Validate request body using Joi
+  const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({
+      message: "Validation failed",
+      errors: error.details.map((detail) => detail.message)
+    });
+  }
 
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    // Find active cart
-    const cart = await CartModel.findOne({ userId: req.auth?.id, status: "Active" })
+    // ✅ Get cart
+    const cart = await CartModel.findOne({ userId, status: "Active" })
       .populate("items.product")
       .session(session);
 
@@ -30,7 +30,7 @@ export const checkout = async (req, res, next) => {
       return res.status(400).json({ message: "Cart is empty or does not exist." });
     }
 
-    // Transform cart items into order items
+    // ✅ Map cart items to order items
     const items = cart.items.map((item) => {
       const product = item.product;
       if (!product || typeof product.price !== "number") {
@@ -39,14 +39,14 @@ export const checkout = async (req, res, next) => {
 
       return {
         productId: product.id,
-        productName: product.name,
+        productName: product.productName || product.name || "Unnamed Product",
         quantity: item.quantity,
         price: product.price,
         discount: product.discount || 0
       };
     });
 
-    // Create and save the order
+    // ✅ Create order
     const newOrder = new OrderModel({
       userId,
       cartId: cart.id,
@@ -56,29 +56,31 @@ export const checkout = async (req, res, next) => {
       paymentMethod: value.paymentMethod,
       tax: value.tax,
       shippingCost: value.shippingCost,
+      subtotal: value.subtotal,
+      total: value.total,
       notes: value.notes || ""
     });
 
     const savedOrder = await newOrder.save({ session });
 
-    // Mark the cart as checked out
+    // ✅ Mark cart as checked out
     cart.status = "Checked Out";
     await cart.save({ session });
 
     await session.commitTransaction();
-    res.status(201).json({
+
+    return res.status(201).json({
       message: "Order created successfully",
       order: savedOrder
     });
   } catch (error) {
     await session.abortTransaction();
     console.error("Checkout error:", error);
-    res.status(500).json({ message: "Checkout failed. Please try again later." });
+    return res.status(500).json({ message: "Checkout failed. Please try again later." });
   } finally {
     session.endSession();
   }
 };
-
 
 
 export const createOrder = async (req, res, next) => {
