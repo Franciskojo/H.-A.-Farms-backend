@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { OrderModel } from "../models/order.js";
 import { CartModel } from "../models/cart.js";
- import { checkoutSchema } from "../validators/order.js";
+//  import { checkoutSchema } from "../validators/order.js";
 
 export const checkout = async (req, res, next) => {
   const userId = req.auth?.id;
