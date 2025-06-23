@@ -12,7 +12,7 @@ const orderItemSchema = new Schema({
 
 // Address Schema
 const addressSchema = new Schema({
-  street: { type: String, required: true, trim: true },
+  streetAddress: { type: String, required: true, trim: true },
   town: { type: String, required: true, trim: true },
   region: { type: String, required: true, trim: true },
   digitalAddress: { type: String, required: true, trim: true },
