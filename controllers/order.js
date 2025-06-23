@@ -6,14 +6,14 @@ import { CartModel } from "../models/cart.js";
 export const checkout = async (req, res, next) => {
   const userId = req.auth?.id;
 
-  // ✅ 1. Validate input
-  const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    return res.status(400).json({
-      message: "Validation failed",
-      errors: error.details.map((detail) => detail.message)
-    });
-  }
+  // // ✅ 1. Validate input
+  // const { error, value } = checkoutSchema.validate(req.body, { abortEarly: false });
+  // if (error) {
+  //   return res.status(400).json({
+  //     message: "Validation failed",
+  //     errors: error.details.map((detail) => detail.message)
+  //   });
+  // }
 
   const session = await mongoose.startSession();
 
