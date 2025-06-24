@@ -1,18 +1,18 @@
 import { Router } from "express";
-import { hasPermission, isAuthenticated } from "../middlewares/auth.js";
-import { checkout, getUserOrderById, getUserOrders } from "../controllers/order.js";
+import { hasPermission, isAuthenticated, adminOnly } from "../middlewares/auth.js";
+import { getUserOrders, getOrderDetails, getAllOrders, updateOrderStatus } from "../controllers/order.js";
+
 
 const orderRouter = Router();
 
-// POST /api/orders/checkout – Complete order from cart
-orderRouter.post("/order/checkout", isAuthenticated, hasPermission("checkout"), checkout);
+// 👤 User order routes
+orderRouter.get("/order/get", isAuthenticated, hasPermission("get_user_orders"), getUserOrders);
 
-// GET /api/orders – Get all orders for authenticated user
-orderRouter.get("/order/get", isAuthenticated, hasPermission("get"), getUserOrders);
+orderRouter.get("/:orderId", isAuthenticated, hasPermission("get_order_details"), getOrderDetails);
 
-// GET /api/orders/:orderId – Get a single order by ID
-orderRouter.get("/order/get/:orderId", isAuthenticated, hasPermission("get_order_id"), getUserOrderById);
+// 🛡️ Admin-only order routes
+orderRouter.get('/admin/all', isAuthenticated, adminOnly, hasPermission("get_all_orders"), getAllOrders);
 
-
+orderRouter.put('/admin/:orderId/status', isAuthenticated, adminOnly, hasPermission("update_order_status"),updateOrderStatus);
 
 export default orderRouter;

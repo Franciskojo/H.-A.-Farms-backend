@@ -35,3 +35,11 @@ export const hasPermission = (action) => {
     };
 };
 
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.auth?.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ message: "Admin access only" });
+};
+
+

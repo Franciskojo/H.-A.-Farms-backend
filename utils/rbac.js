@@ -12,7 +12,10 @@ export const permissions = [
             "add_to_cart",
             "checkout",
             "get",
-            "get_order_id"
+            "get_order_id",
+            "update_cart_item",
+            "get_user_orders",
+            "get_order_details"
             
         ]
     },
@@ -42,7 +45,10 @@ export const permissions = [
             "get_cart",
             "remove_cart",
             "clear_cart",
-            "add_to_cart"
+            "add_to_cart",
+            "update_cart_item",
+            "get_all_orders",
+            "update_order_status"
         ]
     }
 ]

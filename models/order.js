@@ -3,10 +3,10 @@ import { toJSON } from "@reis/mongoose-to-json";
 
 // Order Item Schema
 const orderItemSchema = new Schema({
-  productId: { type: Types.ObjectId, ref: 'Product', required: true },
-  productName: { type: String, required: true },
+  product: { type: Types.ObjectId, ref: 'Product', required: true },
   quantity: { type: Number, required: true, min: 1 },
-  price: { type: Number, required: true, min: 0 },
+  priceAtPurchase: { type: Number, required: true},
+  nameAtPurchase: { type: String, required: true },
   discount: { type: Number, default: 0, min: 0 }
 }, { _id: false });
 
@@ -22,16 +22,16 @@ const addressSchema = new Schema({
 
 // Order Schema
 const orderSchema = new Schema({
-  userId: { type: Types.ObjectId, ref: 'User', required: true },
-  cartId: { type: Types.ObjectId, ref: 'Cart' }, // ✅ Added cartId field
+  user: { type: Types.ObjectId, ref: 'User', required: true },
+  // cartId: { type: Types.ObjectId, ref: 'Cart' }, // ✅ Added cartId field
 
   items: {
     type: [orderItemSchema],
-    validate: [array => array.length > 0, 'Order must contain at least one item']
+   validate: v => Array.isArray(v) && v.length > 0
   },
 
   shippingAddress: { type: addressSchema, required: true },
-  billingAddress: { type: addressSchema, required: true },
+  // billingAddress: { type: addressSchema, required: true },
 
   paymentMethod: {
     type: String,
@@ -45,10 +45,10 @@ const orderSchema = new Schema({
     default: 'pending'
   },
 
-  status: {
+  orderStatus: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending'
+    enum: ['processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'processing'
   },
 
   notes: { type: String, trim: true },
@@ -68,20 +68,20 @@ const orderSchema = new Schema({
 orderSchema.index({ userId: 1, createdAt: -1 });
 
 // Auto-calculate subtotal and total
-orderSchema.pre('validate', function (next) {
-  const subtotal = this.items.reduce((sum, item) => {
-    return sum + (item.price - item.discount) * item.quantity;
-  }, 0);
+// orderSchema.pre('validate', function (next) {
+//   const subtotal = this.items.reduce((sum, item) => {
+//     return sum + (item.price - item.discount) * item.quantity;
+//   }, 0);
 
-  this.subtotal = Math.round(subtotal * 100) / 100;
-  this.total = Math.round((subtotal + this.tax + this.shippingCost) * 100) / 100;
-  next();
-});
+//   this.subtotal = Math.round(subtotal * 100) / 100;
+//   this.total = Math.round((subtotal + this.tax + this.shippingCost) * 100) / 100;
+//   next();
+// });
 
-// Virtual: total item count
-orderSchema.virtual('totalItems').get(function () {
-  return this.items.reduce((total, item) => total + item.quantity, 0);
-});
+// // Virtual: total item count
+// orderSchema.virtual('totalItems').get(function () {
+//   return this.items.reduce((total, item) => total + item.quantity, 0);
+// });
 
 // Apply clean JSON output plugin
 orderSchema.plugin(toJSON);
