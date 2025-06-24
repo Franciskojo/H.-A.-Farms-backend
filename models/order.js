@@ -5,9 +5,8 @@ import { toJSON } from "@reis/mongoose-to-json";
 const orderItemSchema = new Schema({
   product: { type: Types.ObjectId, ref: 'Product', required: true },
   quantity: { type: Number, required: true, min: 1 },
-  priceAtPurchase: { type: Number, required: true},
+  priceAtPurchase: { type: Number, required: true },
   nameAtPurchase: { type: String, required: true },
-  discount: { type: Number, default: 0, min: 0 }
 }, { _id: false });
 
 // Address Schema
@@ -23,15 +22,13 @@ const addressSchema = new Schema({
 // Order Schema
 const orderSchema = new Schema({
   user: { type: Types.ObjectId, ref: 'User', required: true },
-  // cartId: { type: Types.ObjectId, ref: 'Cart' }, // ✅ Added cartId field
 
   items: {
     type: [orderItemSchema],
-   validate: v => Array.isArray(v) && v.length > 0
+    validate: v => Array.isArray(v) && v.length > 0
   },
 
   shippingAddress: { type: addressSchema, required: true },
-  // billingAddress: { type: addressSchema, required: true },
 
   paymentMethod: {
     type: String,
@@ -64,27 +61,7 @@ const orderSchema = new Schema({
   toObject: { virtuals: true }
 });
 
-// Index for efficient user queries
-orderSchema.index({ userId: 1, createdAt: -1 });
-
-// Auto-calculate subtotal and total
-// orderSchema.pre('validate', function (next) {
-//   const subtotal = this.items.reduce((sum, item) => {
-//     return sum + (item.price - item.discount) * item.quantity;
-//   }, 0);
-
-//   this.subtotal = Math.round(subtotal * 100) / 100;
-//   this.total = Math.round((subtotal + this.tax + this.shippingCost) * 100) / 100;
-//   next();
-// });
-
-// // Virtual: total item count
-// orderSchema.virtual('totalItems').get(function () {
-//   return this.items.reduce((total, item) => total + item.quantity, 0);
-// });
-
-// Apply clean JSON output plugin
+orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.plugin(toJSON);
 
-// Export model
 export const OrderModel = model('Order', orderSchema);

@@ -1,25 +1,15 @@
 import { CartModel } from "../models/cart.js";
-import {ProductModel} from "../models/product.js";
+import { ProductModel } from "../models/product.js";
 import { OrderModel } from "../models/order.js";
 
-
-// Get user's cart
+// Get cart
 export const getCart = async (req, res) => {
   try {
     const cart = await CartModel.findOne({ user: req.auth?.id })
-      .populate('items.product', 'name price images')
-      .exec();
-
+      .populate('items.product', 'name price images');
     if (!cart) {
-      return res.status(200).json({
-        items: [],
-        subtotal: 0,
-        tax: 0,
-        shipping: 5.99,
-        total: 5.99
-      });
+      return res.status(200).json({ items: [], subtotal: 0, tax: 0, shipping: 0, total: 0 });
     }
-
     res.json({
       items: cart.items,
       subtotal: cart.subtotal,
@@ -32,52 +22,26 @@ export const getCart = async (req, res) => {
   }
 };
 
-// Add item to cart
+// Add to cart
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
-    
-    // Validate input
-    if (!productId || !quantity || quantity < 1) {
+    if (!productId || quantity < 1) {
       return res.status(400).json({ message: 'Invalid product or quantity' });
     }
 
-    // Get product details
     const product = await ProductModel.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Find user's cart or create new one
     let cart = await CartModel.findOne({ user: req.auth?.id });
-
     if (!cart) {
-      cart = new CartModel({
-        user: req.user.id,
-        items: []
-      });
+      cart = new CartModel({ user: req.auth?.id, items: [] });
     }
 
-    // Check if product already in cart
-    const existingItemIndex = cart.items.findIndex(
-      item => item.product.toString() === productId
-    );
-
-    if (existingItemIndex > -1) {
-      // Update quantity if product exists
-      cart.items[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item
-      cart.items.push({
-        product: productId,
-        quantity,
-        price: product.price
-      });
-    }
-
+    cart.addItem(productId, product.price, quantity);
     await cart.save();
-    
-    // Populate product details for response
     await cart.populate('items.product', 'name price images');
 
     res.status(201).json({
@@ -92,32 +56,23 @@ export const addToCart = async (req, res) => {
   }
 };
 
-// Update cart item quantity
+// Update quantity
 export const updateCartItem = async (req, res) => {
   try {
     const { itemId } = req.params;
     const { quantity } = req.body;
-
     if (!quantity || quantity < 1) {
       return res.status(400).json({ message: 'Invalid quantity' });
     }
 
     const cart = await CartModel.findOne({ user: req.auth?.id });
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
-    }
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-    const itemIndex = cart.items.findIndex(
-      item => item._id.toString() === itemId
-    );
+    const item = cart.items.id(itemId);
+    if (!item) return res.status(404).json({ message: 'Item not found' });
 
-    if (itemIndex === -1) {
-      return res.status(404).json({ message: 'Item not found in cart' });
-    }
-
-    cart.items[itemIndex].quantity = quantity;
+    item.quantity = quantity;
     await cart.save();
-    
     await cart.populate('items.product', 'name price images');
 
     res.json({
@@ -132,22 +87,14 @@ export const updateCartItem = async (req, res) => {
   }
 };
 
-// Remove item from cart
+// Remove from cart
 export const removeFromCart = async (req, res) => {
   try {
-    const { itemId } = req.params;
-
     const cart = await CartModel.findOne({ user: req.auth?.id });
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
-    }
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-    cart.items = cart.items.filter(
-      item => item._id.toString() !== itemId
-    );
-
+    cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
     await cart.save();
-    
     await cart.populate('items.product', 'name price images');
 
     res.json({
@@ -172,7 +119,7 @@ export const clearCart = async (req, res) => {
     ).populate('items.product', 'name price images');
 
     res.json({
-      items: cart ? cart.items : [],
+      items: [],
       subtotal: 0,
       tax: 0,
       shipping: 0,
@@ -183,55 +130,39 @@ export const clearCart = async (req, res) => {
   }
 };
 
+// Checkout
 export const checkoutCart = async (req, res) => {
   try {
     const userId = req.auth?.id;
     const { shippingAddress, paymentMethod } = req.body;
 
-    // Validate required fields
-    if (!userId || !shippingAddress || !paymentMethod) {
-      return res.status(400).json({
-        message: 'User, shipping address, and payment method are required'
-      });
+    if (!userId || !shippingAddress?.streetAddress || !paymentMethod) {
+      return res.status(400).json({ message: 'Required fields are missing' });
     }
 
-    // Validate streetAddress exists (matches schema)
-    if (!shippingAddress.streetAddress) {
-      return res.status(400).json({
-        message: 'Shipping address must include streetAddress'
-      });
-    }
-
-    // Get user's cart with product details
     const cart = await CartModel.findOne({ user: userId })
-      .populate('items.product', 'name price discount'); // Include discount
+      .populate('items.product', 'name price');
 
     if (!cart || !cart.items.length) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
-    // Construct order items (with null checks)
     const orderItems = cart.items.map(item => {
-      if (!item.product || !item.product.name) {
-        throw new Error('A product in your cart is missing or was deleted.');
-      }
-
+      if (!item.product) throw new Error('Product missing');
       return {
         product: item.product._id,
         quantity: item.quantity,
         priceAtPurchase: item.price,
         nameAtPurchase: item.product.name,
-        discount: item.product.discount || 0
+        
       };
     });
 
-    // Defensive calculations
-    const subtotal = cart.subtotal ?? cart.items.reduce((sum, i) => sum + i.quantity * i.price, 0);
-    const tax = cart.tax ?? 0;
-    const shipping = cart.shipping ?? 5.99;
-    const total = subtotal + tax + shipping;
+    const subtotal = cart.subtotal;
+    const tax = cart.tax;
+    const shipping = cart.shipping;
+    const total = cart.total;
 
-    // Create and save order
     const order = new OrderModel({
       user: userId,
       items: orderItems,
@@ -246,11 +177,8 @@ export const checkoutCart = async (req, res) => {
     });
 
     await order.save();
-
-    // Clear user's cart
     await CartModel.findOneAndUpdate({ user: userId }, { items: [] });
 
-    // Return response
     res.status(201).json({
       message: 'Order created successfully',
       order: {
@@ -261,7 +189,6 @@ export const checkoutCart = async (req, res) => {
         createdAt: order.createdAt
       }
     });
-
   } catch (err) {
     console.error('Checkout error:', err);
     res.status(500).json({ message: err.message || 'Something went wrong during checkout' });
