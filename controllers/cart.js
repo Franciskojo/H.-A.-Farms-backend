@@ -26,6 +26,7 @@ export const getCart = async (req, res) => {
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
+
     if (!productId || quantity < 1) {
       return res.status(400).json({ message: 'Invalid product or quantity' });
     }
@@ -40,8 +41,10 @@ export const addToCart = async (req, res) => {
       cart = new CartModel({ user: req.auth?.id, items: [] });
     }
 
-    cart.addItem(productId, product.price, quantity);
-    await cart.save();
+    // ✅ This already saves the document
+    await cart.addItem(productId, product.price, quantity);
+
+    // ✅ You can now populate safely
     await cart.populate('items.product', 'name price images');
 
     res.status(201).json({
