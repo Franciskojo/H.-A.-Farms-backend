@@ -6,7 +6,7 @@ import { OrderModel } from "../models/order.js";
 export const getCart = async (req, res) => {
   try {
     const cart = await CartModel.findOne({ user: req.auth?.id })
-      .populate('items.product', 'name price images');
+      .populate('items.product', 'productName productImage price');
     if (!cart) {
       return res.status(200).json({ items: [], subtotal: 0, tax: 0, shipping: 0, total: 0 });
     }
@@ -45,7 +45,7 @@ export const addToCart = async (req, res) => {
     await cart.addItem(productId, product.price, quantity);
 
     // ✅ You can now populate safely
-    await cart.populate('items.product', 'name price images');
+    await cart.populate('items.product', 'productName productImage price');
 
     res.status(201).json({
       items: cart.items,
@@ -76,7 +76,7 @@ export const updateCartItem = async (req, res) => {
 
     item.quantity = quantity;
     await cart.save();
-    await cart.populate('items.product', 'name price images');
+    await cart.populate('items.product', 'productName productImage price');
 
     res.json({
       items: cart.items,
@@ -98,7 +98,7 @@ export const removeFromCart = async (req, res) => {
 
     cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
     await cart.save();
-    await cart.populate('items.product', 'name price images');
+    await cart.populate('items.product', 'productName productImage price');
 
     res.json({
       items: cart.items,
@@ -120,7 +120,7 @@ export const removeFromCartByProductId = async (req, res) => {
 
     cart.items = cart.items.filter(item => item.product.toString() !== productId);
     await cart.save();
-    await cart.populate('items.product', 'name price images');
+    await cart.populate('items.product', 'productName productImage price');
 
     res.json({
       items: cart.items,
@@ -142,7 +142,7 @@ export const clearCart = async (req, res) => {
       { user: req.auth?.id },
       { items: [] },
       { new: true }
-    ).populate('items.product', 'name price images');
+    ).populate('items.product', 'productName productImage price');
 
     res.json({
       items: [],
@@ -167,7 +167,7 @@ export const checkoutCart = async (req, res) => {
     }
 
     const cart = await CartModel.findOne({ user: userId })
-      .populate('items.product', 'name price');
+      .populate('items.product', 'productName productImage price');
 
     if (!cart || !cart.items.length) {
       return res.status(400).json({ message: 'Cart is empty' });
