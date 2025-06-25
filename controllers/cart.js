@@ -179,7 +179,7 @@ export const checkoutCart = async (req, res) => {
         product: item.product._id,
         quantity: item.quantity,
         priceAtPurchase: item.price,
-        nameAtPurchase: item.product.name,
+        nameAtPurchase: item.product.productName,
         
       };
     });
