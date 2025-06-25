@@ -112,6 +112,29 @@ export const removeFromCart = async (req, res) => {
   }
 };
 
+export const removeFromCartByProductId = async (req, res) => {
+  const { productId } = req.body;
+  try {
+    const cart = await CartModel.findOne({ user: req.auth?.id });
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    cart.items = cart.items.filter(item => item.product.toString() !== productId);
+    await cart.save();
+    await cart.populate('items.product', 'name price images');
+
+    res.json({
+      items: cart.items,
+      subtotal: cart.subtotal,
+      tax: cart.tax,
+      shipping: cart.shipping,
+      total: cart.total
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
 // Clear cart
 export const clearCart = async (req, res) => {
   try {

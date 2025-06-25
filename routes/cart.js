@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { hasPermission, isAuthenticated } from "../middlewares/auth.js";
-import { addToCart, checkoutCart, clearCart, getCart, removeFromCart, updateCartItem } from "../controllers/cart.js";
+import { addToCart, checkoutCart, clearCart, getCart, removeFromCart, updateCartItem, removeFromCartByProductId } from "../controllers/cart.js";
 
 
 
@@ -21,6 +21,8 @@ cartRouter.delete("/items/:itemId", isAuthenticated, hasPermission("remove_cart"
 cartRouter.delete("/clear", isAuthenticated, hasPermission("clear_cart"), clearCart);
 
 cartRouter.post("/checkout", isAuthenticated, hasPermission("checkout"), checkoutCart);
+
+cartRouter.post("/remove", isAuthenticated, hasPermission("remove_cart"), removeFromCartByProductId);
 
 
 
