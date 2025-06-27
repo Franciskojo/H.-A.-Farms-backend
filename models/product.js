@@ -23,7 +23,7 @@ const productSchema = new Schema({
   status: {
     type: String,
     enum: ['draft', 'active', 'archived'],
-    default: 'draft'
+    default: 'active'
   },
   productImage: { type: String, required: true },
 
