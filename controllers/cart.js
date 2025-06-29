@@ -6,12 +6,26 @@ import mongoose from "mongoose";
 // Get cart
 export const getCart = async (req, res) => {
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.userId })
-      .populate('items.product', 'productName productImage price');
-    if (!cart) {
-      return res.status(200).json({ items: [], subtotal: 0, tax: 0, shipping: 0, total: 0 });
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: User ID missing' });
     }
-    res.json({
+
+    const cart = await CartModel.findOne({ user: userId })
+      .populate('items.product', 'productName productImage price');
+
+    if (!cart) {
+      return res.status(200).json({
+        items: [],
+        subtotal: 0,
+        tax: 0,
+        shipping: 0,
+        total: 0
+      });
+    }
+
+    res.status(200).json({
       items: cart.items,
       subtotal: cart.subtotal,
       tax: cart.tax,
@@ -19,7 +33,7 @@ export const getCart = async (req, res) => {
       total: cart.total
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message || 'Failed to load cart' });
   }
 };
 
@@ -70,13 +84,17 @@ export const addToCart = async (req, res) => {
 // Update quantity
 export const updateCartItem = async (req, res) => {
   try {
+    const userId = req.auth?.userId;
     const { itemId } = req.params;
     const { quantity } = req.body;
-    if (!quantity || quantity < 1) {
-      return res.status(400).json({ message: 'Invalid quantity' });
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!quantity || quantity < 1) return res.status(400).json({ message: 'Invalid quantity' });
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      return res.status(400).json({ message: 'Invalid item ID' });
     }
 
-    const cart = await CartModel.findOne({ user: req.auth?.userId });
+    const cart = await CartModel.findOne({ user: userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     const item = cart.items.id(itemId);
@@ -86,13 +104,7 @@ export const updateCartItem = async (req, res) => {
     await cart.save();
     await cart.populate('items.product', 'productName productImage price');
 
-    res.json({
-      items: cart.items,
-      subtotal: cart.subtotal,
-      tax: cart.tax,
-      shipping: cart.shipping,
-      total: cart.total
-    });
+    res.json(formatCartResponse(cart));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -101,42 +113,46 @@ export const updateCartItem = async (req, res) => {
 // Remove from cart
 export const removeFromCart = async (req, res) => {
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.userId });
+    const userId = req.auth?.userId;
+    const { itemId } = req.params;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      return res.status(400).json({ message: 'Invalid item ID' });
+    }
+
+    const cart = await CartModel.findOne({ user: userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-    cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
+    cart.items = cart.items.filter(item => item._id.toString() !== itemId);
     await cart.save();
     await cart.populate('items.product', 'productName productImage price');
 
-    res.json({
-      items: cart.items,
-      subtotal: cart.subtotal,
-      tax: cart.tax,
-      shipping: cart.shipping,
-      total: cart.total
-    });
+    res.json(formatCartResponse(cart));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+
 export const removeFromCartByProductId = async (req, res) => {
-  const { productId } = req.body;
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.userId });
+    const userId = req.auth?.userId;
+    const { productId } = req.body;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+
+    const cart = await CartModel.findOne({ user: userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     cart.items = cart.items.filter(item => item.product.toString() !== productId);
     await cart.save();
     await cart.populate('items.product', 'productName productImage price');
 
-    res.json({
-      items: cart.items,
-      subtotal: cart.subtotal,
-      tax: cart.tax,
-      shipping: cart.shipping,
-      total: cart.total
-    });
+    res.json(formatCartResponse(cart));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -146,23 +162,16 @@ export const removeFromCartByProductId = async (req, res) => {
 // Clear cart
 export const clearCart = async (req, res) => {
   try {
-    const cart = await CartModel.findOneAndUpdate(
-      { user: req.auth?.userId },
-      { items: [] },
-      { new: true }
-    ).populate('items.product', 'productName productImage price');
+    const userId = req.auth?.userId;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    res.json({
-      items: [],
-      subtotal: 0,
-      tax: 0,
-      shipping: 0,
-      total: 0
-    });
+    await CartModel.findOneAndUpdate({ user: userId }, { items: [] });
+    res.json({ items: [], subtotal: 0, tax: 0, shipping: 0, total: 0 });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Checkout
 export const checkoutCart = async (req, res) => {
@@ -177,7 +186,7 @@ export const checkoutCart = async (req, res) => {
     const cart = await CartModel.findOne({ user: userId })
       .populate('items.product', 'productName productImage price');
 
-    if (!cart || !cart.items.length) {
+    if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
@@ -187,15 +196,11 @@ export const checkoutCart = async (req, res) => {
         product: item.product._id,
         quantity: item.quantity,
         priceAtPurchase: item.price,
-        nameAtPurchase: item.product.productName,
-        
+        nameAtPurchase: item.product.productName
       };
     });
 
-    const subtotal = cart.subtotal;
-    const tax = cart.tax;
-    const shipping = cart.shipping;
-    const total = cart.total;
+    const { subtotal, tax, shipping, total } = cart;
 
     const order = new OrderModel({
       user: userId,
