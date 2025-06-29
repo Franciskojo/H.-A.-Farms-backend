@@ -42,7 +42,9 @@ export const getOrderDetails = async (req, res, next) => {
     const order = await OrderModel.findOne({
       _id: orderId,
       user: req.auth?.userId
-    }).populate("items.product", "name price images");
+    })
+    .populate("items.product", "productName productImage sku") // populate item details
+    .populate("user", "name email"); // ✅ populate user details
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
