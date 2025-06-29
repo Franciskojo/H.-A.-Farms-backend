@@ -35,19 +35,17 @@ export const getUserOrders = async (req, res) => {
 // ------------------------------
 // Get a specific order for the current user
 // ------------------------------
-export const getOrderDetails = async (req, res) => {
+export const getOrderDetails = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    const userId = req.auth?.userId;
-
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
-
+    console.log("Fetching order:", orderId);
+    console.log("Auth userId:", req.auth?.userId);
     const order = await OrderModel.findOne({
       _id: orderId,
-      user: userId
-    }).populate("items.product", "productName productImage sku");
+      user: req.auth?.userId
+    })
+      .populate("items.product", "productName price productImage sku")
+      .populate("user", "name email"); // ✅ This line is missing
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -55,11 +53,11 @@ export const getOrderDetails = async (req, res) => {
 
     res.json(order);
   } catch (err) {
-    console.error("❌ Error fetching order details:", err.message);
-    console.error(err.stack);
+    console.error("Error fetching order details:", err);
     res.status(500).json({ message: "Failed to fetch order details" });
   }
 };
+
 
 // ------------------------------
 // Admin: Get all orders in the system
