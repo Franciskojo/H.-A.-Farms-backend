@@ -9,20 +9,20 @@ import { addToCart, checkoutCart, clearCart, getCart, removeFromCart, updateCart
 const cartRouter = Router();
 
 
-cartRouter.post("/add", isAuthenticated, hasPermission("add_to_cart"), addToCart);
+cartRouter.post("/cart/add", isAuthenticated, hasPermission("add_to_cart"), addToCart);
 
-cartRouter.get("/get", isAuthenticated, hasPermission("get_cart"), getCart);
+cartRouter.get("/cart/get", isAuthenticated, hasPermission("get_cart"), getCart);
 
 // PUT /api/cart/items/:itemId - Update cart item quantity
-cartRouter.put("/items/:itemId", isAuthenticated, hasPermission("update_cart_item"), updateCartItem);
+cartRouter.put("/cart/items/:itemId", isAuthenticated, hasPermission("update_cart_item"), updateCartItem);
 
-cartRouter.delete("/items/:itemId", isAuthenticated, hasPermission("remove_cart"), removeFromCart);
+cartRouter.delete("/cart/items/:itemId", isAuthenticated, hasPermission("remove_cart"), removeFromCart);
 
-cartRouter.delete("/clear", isAuthenticated, hasPermission("clear_cart"), clearCart);
+cartRouter.delete("/cart/clear", isAuthenticated, hasPermission("clear_cart"), clearCart);
 
-cartRouter.post("/checkout", isAuthenticated, hasPermission("checkout"), checkoutCart);
+cartRouter.post("/cart/checkout", isAuthenticated, hasPermission("checkout"), checkoutCart);
 
-cartRouter.post("/remove", isAuthenticated, hasPermission("remove_cart"), removeFromCartByProductId);
+cartRouter.post("/cart/remove", isAuthenticated, hasPermission("remove_cart"), removeFromCartByProductId);
 
 
 
