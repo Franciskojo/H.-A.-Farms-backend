@@ -3,12 +3,12 @@ import { OrderModel } from "../models/order.js";
 // ------------------------------
 // Get all orders for the current user
 // ------------------------------
-export const getUserOrders = async (req, res, next) => {
+export const getUserOrders = async (req, res) => {
   try {
     const userId = req.auth?.userId;
 
-    const page = parseInt(req.query.page) || 1;       // Default page = 1
-    const limit = parseInt(req.query.limit) || 10;    // Default limit = 10
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const [orders, total] = await Promise.all([
@@ -16,21 +16,21 @@ export const getUserOrders = async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      OrderModel.countDocuments({ user: userId })
+      OrderModel.countDocuments({ user: userId }),
     ]);
 
     res.json({
       orders,
       page,
       totalPages: Math.ceil(total / limit),
-      totalOrders: total
+      totalOrders: total,
     });
   } catch (err) {
     console.error("Error fetching user orders:", err);
     res.status(500).json({ message: "Failed to fetch user orders" });
-    next(err);
   }
 };
+
 
 // ------------------------------
 // Get a specific order for the current user

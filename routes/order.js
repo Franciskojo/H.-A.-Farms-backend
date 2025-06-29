@@ -8,7 +8,7 @@ const orderRouter = Router();
 // 👤 User order routes
 orderRouter.get("/order/get", isAuthenticated, hasPermission("get_user_orders"), getUserOrders);
 
-orderRouter.get("/:orderId", isAuthenticated, hasPermission("get_order_details"), getOrderDetails);
+orderRouter.get("/order/:orderId", isAuthenticated, hasPermission("get_order_details"), getOrderDetails);
 
 // 🛡️ Admin-only order routes
 orderRouter.get('/admin/all', isAuthenticated, adminOnly, hasPermission("get_all_orders"), getAllOrders);
