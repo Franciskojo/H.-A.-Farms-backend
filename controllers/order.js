@@ -5,7 +5,7 @@ import { OrderModel } from "../models/order.js";
 // ------------------------------
 export const getUserOrders = async (req, res, next) => {
   try {
-    const userId = req.auth?.id;
+    const userId = req.auth?.userId;
 
     const page = parseInt(req.query.page) || 1;       // Default page = 1
     const limit = parseInt(req.query.limit) || 10;    // Default limit = 10
@@ -41,7 +41,7 @@ export const getOrderDetails = async (req, res, next) => {
 
     const order = await OrderModel.findOne({
       _id: orderId,
-      user: req.auth?.id
+      user: req.auth?.userId
     }).populate("items.product", "name price images");
 
     if (!order) {

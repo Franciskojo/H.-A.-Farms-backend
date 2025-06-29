@@ -1,11 +1,12 @@
 import { CartModel } from "../models/cart.js";
 import { ProductModel } from "../models/product.js";
 import { OrderModel } from "../models/order.js";
+import mongoose from "mongoose";
 
 // Get cart
 export const getCart = async (req, res) => {
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.id })
+    const cart = await CartModel.findOne({ user: req.auth?.userId })
       .populate('items.product', 'productName productImage price');
     if (!cart) {
       return res.status(200).json({ items: [], subtotal: 0, tax: 0, shipping: 0, total: 0 });
@@ -26,9 +27,19 @@ export const getCart = async (req, res) => {
 export const addToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: Missing user ID' });
+    }
 
     if (!productId || quantity < 1) {
       return res.status(400).json({ message: 'Invalid product or quantity' });
+    }
+
+    // ✅ Validate productId format before using it in a DB query
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid product ID format' });
     }
 
     const product = await ProductModel.findById(productId);
@@ -36,15 +47,12 @@ export const addToCart = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    let cart = await CartModel.findOne({ user: req.auth?.id });
+    let cart = await CartModel.findOne({ user: userId });
     if (!cart) {
-      cart = new CartModel({ user: req.auth?.id, items: [] });
+      cart = new CartModel({ user: userId, items: [] });
     }
 
-    // ✅ This already saves the document
     await cart.addItem(productId, product.price, quantity);
-
-    // ✅ You can now populate safely
     await cart.populate('items.product', 'productName productImage price');
 
     res.status(201).json({
@@ -68,7 +76,7 @@ export const updateCartItem = async (req, res) => {
       return res.status(400).json({ message: 'Invalid quantity' });
     }
 
-    const cart = await CartModel.findOne({ user: req.auth?.id });
+    const cart = await CartModel.findOne({ user: req.auth?.userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     const item = cart.items.id(itemId);
@@ -93,7 +101,7 @@ export const updateCartItem = async (req, res) => {
 // Remove from cart
 export const removeFromCart = async (req, res) => {
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.id });
+    const cart = await CartModel.findOne({ user: req.auth?.userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
@@ -115,7 +123,7 @@ export const removeFromCart = async (req, res) => {
 export const removeFromCartByProductId = async (req, res) => {
   const { productId } = req.body;
   try {
-    const cart = await CartModel.findOne({ user: req.auth?.id });
+    const cart = await CartModel.findOne({ user: req.auth?.userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     cart.items = cart.items.filter(item => item.product.toString() !== productId);
@@ -139,7 +147,7 @@ export const removeFromCartByProductId = async (req, res) => {
 export const clearCart = async (req, res) => {
   try {
     const cart = await CartModel.findOneAndUpdate(
-      { user: req.auth?.id },
+      { user: req.auth?.userId },
       { items: [] },
       { new: true }
     ).populate('items.product', 'productName productImage price');
@@ -159,7 +167,7 @@ export const clearCart = async (req, res) => {
 // Checkout
 export const checkoutCart = async (req, res) => {
   try {
-    const userId = req.auth?.id;
+    const userId = req.auth?.userId;
     const { shippingAddress, paymentMethod } = req.body;
 
     if (!userId || !shippingAddress?.streetAddress || !paymentMethod) {

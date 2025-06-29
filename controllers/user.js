@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { mailTransport } from "../utils/mail.js";
 
 
-
 // Register User
 export const registerUser = async (req, res, next) => {
   try {
