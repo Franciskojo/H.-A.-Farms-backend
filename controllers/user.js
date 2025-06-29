@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { mailTransport } from "../utils/mail.js";
 
 
+
+// Register User
 export const registerUser = async (req, res, next) => {
   try {
     // Validate user input
@@ -20,7 +22,7 @@ export const registerUser = async (req, res, next) => {
     }
 
     // Hash password
-    const hashedPassword = bcrypt.hashSync(value.password, 10);
+    const hashedPassword = await bcrypt.hash(value.password, 10);
     const profilePictureUrl = req.file?.path;
 
     // Save user to database
@@ -33,6 +35,7 @@ export const registerUser = async (req, res, next) => {
     });
 
     // Generate JWT token
+    if (!process.env.JWT_PRIVATE_KEY) throw new Error("JWT_PRIVATE_KEY is not set.");
     const token = jwt.sign(
       { userId: newUser._id, role: newUser.role },
       process.env.JWT_PRIVATE_KEY,
@@ -64,6 +67,7 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
+// Login User
 export const loginUser = async (req, res, next) => {
   try {
     // Validate input
@@ -79,12 +83,13 @@ export const loginUser = async (req, res, next) => {
     }
 
     // Compare password
-    const correctPassword = bcrypt.compareSync(value.password, user.password);
+    const correctPassword = await bcrypt.compare(value.password, user.password);
     if (!correctPassword) {
       return res.status(401).json({ message: "Invalid credentials!" });
     }
 
     // Generate token
+    if (!process.env.JWT_PRIVATE_KEY) throw new Error("JWT_PRIVATE_KEY is not set.");
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_PRIVATE_KEY,
@@ -97,7 +102,7 @@ export const loginUser = async (req, res, next) => {
       accessToken: token,
       user: {
         id: user._id,
-        name: user.name, // or fullName if that's what you're using
+        name: user.name,
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture
@@ -109,12 +114,12 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-
+// Get Profile
 export const getProfile = async (req, res, next) => {
   try {
     const user = await UserModel
-      .findById(req.auth.userId) // or req.userId depending on your JWT middleware
-      .select("-password"); // ✅ exclude password
+      .findById(req.auth.userId)
+      .select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -127,30 +132,30 @@ export const getProfile = async (req, res, next) => {
   }
 };
 
+// Update Profile
 export const updateProfile = async (req, res, next) => {
   try {
-    // Validate user input
-    const { error, value } = updateProfileValidator.validate({
+    const updateData = {
       ...req.body,
       profilePicture: req.file?.path
-    });
+    };
 
+    // Validate input
+    const { error, value } = updateProfileValidator.validate(updateData);
     if (error) {
       return res.status(422).json({ message: error.details[0].message });
     }
 
-    // Update and return the updated user (excluding password)
     const updatedUser = await UserModel.findByIdAndUpdate(
-      req.auth.userId,       // make sure your JWT middleware sets `userId`
+      req.auth.userId,
       value,
-      { new: true }          // return updated document
+      { new: true }
     ).select("-password");
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Respond with updated user
     res.status(200).json({
       message: "Profile updated successfully",
       user: updatedUser
