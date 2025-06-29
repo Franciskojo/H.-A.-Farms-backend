@@ -76,7 +76,6 @@ export const loginUser = async (req, res, next) => {
 
 }
 
-
 export const getProfile = async (req, res, next) => {
   try {
     // Find authenticated user from database
