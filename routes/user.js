@@ -8,13 +8,13 @@ import { getProfile, loginUser, registerUser, updateProfile } from "../controlle
 const userRouter = Router();
 
 // Define routes
-userRouter.post("/register", upload.single("profilePicture"), registerUser);
+userRouter.post("/users/register", upload.single("profilePicture"), registerUser);
 
-userRouter.post("/login", loginUser);
+userRouter.post("/users/login", loginUser);
 
-userRouter.get("/me", isAuthenticated, hasPermission("get_profile"), getProfile);
+userRouter.get("/users/me", isAuthenticated, hasPermission("get_profile"), getProfile);
 
-userRouter.patch("/:id", isAuthenticated, hasPermission("update_profile"), upload.single("profilePicture"), updateProfile);
+userRouter.patch("/users/:id", isAuthenticated, hasPermission("update_profile"), upload.single("profilePicture"), updateProfile);
 
 
 // export router
