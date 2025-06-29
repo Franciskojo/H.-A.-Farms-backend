@@ -35,26 +35,39 @@ export const getUserOrders = async (req, res) => {
 // ------------------------------
 // Get a specific order for the current user
 // ------------------------------
-export const getOrderDetails = async (req, res, next) => {
+import mongoose from "mongoose";
+
+export const getOrderDetails = async (req, res) => {
   try {
     const { orderId } = req.params;
-    console.log("Fetching order:", orderId);
-    console.log("Auth userId:", req.auth?.userId);
+
+    // Check for authentication
+    if (!req.auth?.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: "Invalid order ID format" });
+    }
+
     const order = await OrderModel.findOne({
       _id: orderId,
-      user: req.auth?.userId
+      user: req.auth.userId
     })
       .populate("items.product", "productName price productImage sku")
-      .populate("user", "name email"); // ✅ This line is missing
+      .populate("user", "name email");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    res.json(order);
+    return res.json(order);
+
   } catch (err) {
-    console.error("Error fetching order details:", err);
-    res.status(500).json({ message: "Failed to fetch order details" });
+    console.error("🔥 Error in getOrderDetails:", err.message);
+    console.error(err.stack);
+    return res.status(500).json({ message: "Failed to fetch order details", error: err.message });
   }
 };
 
