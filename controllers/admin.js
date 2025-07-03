@@ -28,7 +28,7 @@ export const getAdminSummary = async (req, res) => {
       { $match: { status: { $nin: ['cancelled'] } } },
       { $group: { _id: null, total: { $sum: "$total" } } }
     ]);
-    const totalRevenue = revenueAgg[0]?.total || 0;
+    const totalRevenue = revenueAgg?.[0]?.total ?? 0;
 
     // 3. Counts
     const [totalOrders, totalProducts, totalUsers] = await Promise.all([
@@ -89,7 +89,6 @@ export const getAdminSummary = async (req, res) => {
       data: revenueBreakdown.map(r => r.amount)
     };
 
-    // ✅ Final response
     res.json({
       totalRevenue,
       totalOrders,
