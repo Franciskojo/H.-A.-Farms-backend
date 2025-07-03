@@ -23,14 +23,14 @@ export const getAdminSummary = async (req, res) => {
 
     const endDate = end ? new Date(end + 'T23:59:59') : new Date();
 
-    // 2. Revenue aggregation
+    // 2. Total revenue
     const revenueAgg = await OrderModel.aggregate([
       { $match: { status: { $nin: ['cancelled'] } } },
       { $group: { _id: null, total: { $sum: "$total" } } }
     ]);
     const totalRevenue = revenueAgg?.[0]?.total ?? 0;
 
-    // 3. Counts
+    // 3. Entity counts
     const [totalOrders, totalProducts, totalUsers] = await Promise.all([
       OrderModel.countDocuments(),
       ProductModel.countDocuments(),
@@ -73,7 +73,7 @@ export const getAdminSummary = async (req, res) => {
       data: salesData.map(d => d.dailySales)
     };
 
-    // 6. Revenue sources
+    // 6. Revenue sources chart
     const revenueBreakdown = await OrderModel.aggregate([
       { $match: { status: { $nin: ['cancelled'] } } },
       {
@@ -89,14 +89,15 @@ export const getAdminSummary = async (req, res) => {
       data: revenueBreakdown.map(r => r.amount)
     };
 
+    // ✅ Always return valid chart data structures to avoid frontend crashes
     res.json({
       totalRevenue,
       totalOrders,
       totalProducts,
       totalUsers,
       recentOrders: formattedOrders,
-      salesChartData,
-      revenueSources
+      salesChartData: (salesChartData.labels?.length ? salesChartData : { labels: [], data: [] }),
+      revenueSources: (revenueSources.labels?.length ? revenueSources : { labels: [], data: [] })
     });
 
   } catch (err) {
