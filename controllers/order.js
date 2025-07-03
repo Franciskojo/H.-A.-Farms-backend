@@ -1,4 +1,5 @@
 import { OrderModel } from "../models/order.js";
+import mongoose from "mongoose";
 
 // ------------------------------
 // Get all orders for the current user
@@ -35,7 +36,6 @@ export const getUserOrders = async (req, res) => {
 // ------------------------------
 // Get a specific order for the current user
 // ------------------------------
-import mongoose from "mongoose";
 
 export const getOrderDetails = async (req, res) => {
   try {

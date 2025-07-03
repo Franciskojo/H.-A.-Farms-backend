@@ -6,6 +6,7 @@ import userRouter from "./routes/user.js";
 import productRouter from "./routes/product.js";
 import cartRouter from "./routes/cart.js";
 import orderRouter from "./routes/order.js";
+import summaryRouter from "./routes/admin.js";
 
 
 // Connect to database
@@ -31,6 +32,7 @@ app.use( userRouter)
 app.use(productRouter)
 app.use( cartRouter)
 app.use(orderRouter)
+app.use(summaryRouter)
 
 
 
