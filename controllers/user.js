@@ -164,3 +164,73 @@ export const updateProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+
+// @desc    Get all users (with pagination & optional role filter)
+// @route   GET /admin/users
+export const getAllUsers = async (req, res) => {
+  try {
+    const { role, page = 1, limit = 10 } = req.query;
+    const filter = role ? { role } : {};
+
+    const users = await UserModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select('-password'); // never return password hash
+
+    const total = await UserModel.countDocuments(filter);
+
+    res.json({
+      users,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch users', error: err.message });
+  }
+};
+
+// @desc    Delete a user
+// @route   DELETE /admin/users/:id
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedUser = await UserModel.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete user', error: err.message });
+  }
+};
+
+
+// @desc    Update user role
+// @route   PATCH /admin/users/:id/role
+// export const updateUserRole = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { role } = req.body;
+
+//     if (!['admin', 'customer'].includes(role)) {
+//       return res.status(400).json({ message: 'Invalid role specified' });
+//     }
+
+//     const user = await UserModel.findByIdAndUpdate(id, { role }, { new: true });
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     res.json({ message: 'Role updated', user });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Failed to update role', error: err.message });
+//   }
+// };
+

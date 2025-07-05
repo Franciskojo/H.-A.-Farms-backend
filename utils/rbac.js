@@ -47,7 +47,9 @@ export const permissions = [
       "clear_cart",
       "get_all_orders",
       "update_order_status",
-      "get_summary"
+      "get_summary",
+      "get_all_users",
+      "delete_user"
     ]
   }
 ];
