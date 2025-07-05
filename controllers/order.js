@@ -112,7 +112,7 @@ export const getAllOrders = async (req, res, next) => {
 // ------------------------------
 export const updateOrderStatus = async (req, res, next) => {
   try {
-    if (!req.auth?.adminOnly) {
+    if (!req.auth?.role) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
