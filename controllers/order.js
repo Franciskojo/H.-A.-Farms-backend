@@ -112,21 +112,21 @@ export const getAllOrders = async (req, res, next) => {
 // ------------------------------
 export const updateOrderStatus = async (req, res, next) => {
   try {
-    if (!req.auth?.role) {
+    if (!req.auth?.role || req.auth.role !== 'admin') {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
     const { status } = req.body;
     const { orderId } = req.params;
 
-    const validStatuses = ["processing", "shipped", "delivered", "cancelled"];
+    const validStatuses = [ "processing", "shipped", "delivered", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid order status" });
     }
 
     const order = await OrderModel.findByIdAndUpdate(
       orderId,
-      { orderStatus: status },
+      { status }, // ✅ use the correct field name
       { new: true }
     );
 
@@ -134,7 +134,7 @@ export const updateOrderStatus = async (req, res, next) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    res.json(order);
+    res.json({ message: "Order status updated", order });
   } catch (err) {
     console.error("Error updating order status:", err);
     res.status(500).json({ message: "Failed to update order status" });
