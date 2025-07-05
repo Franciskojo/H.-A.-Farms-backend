@@ -14,6 +14,7 @@ export const getUserOrders = async (req, res) => {
 
     const [orders, total] = await Promise.all([
       OrderModel.find({ user: userId })
+        .populate('user', 'name email profilePicture') // ✅ Populate user data
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
