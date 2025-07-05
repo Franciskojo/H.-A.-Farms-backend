@@ -14,7 +14,6 @@ export const getUserOrders = async (req, res) => {
 
     const [orders, total] = await Promise.all([
       OrderModel.find({ user: userId })
-        .populate('user', 'name email profilePicture') // ✅ Populate user data
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -88,7 +87,7 @@ export const getAllOrders = async (req, res, next) => {
 
     const [orders, total] = await Promise.all([
       OrderModel.find()
-        .populate("user", "name email")
+        .populate("user", "name email profilePicture")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
