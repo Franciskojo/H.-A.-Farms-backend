@@ -62,9 +62,9 @@ const orderSchema = new Schema({
 });
 
 // ✅ Add virtual orderId like "ORD-1A2B3C"
-orderSchema.virtual('orderId').get(function () {
-  return `ORD-${this._id.toString().slice(-6).toUpperCase()}`;
-});
+// orderSchema.virtual('orderId').get(function () {
+//   return `ORD-${this._id.toString().slice(-6).toUpperCase()}`;
+// });
 
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.plugin(toJSON);
