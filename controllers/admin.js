@@ -45,7 +45,7 @@ export const getAdminSummary = async (req, res) => {
 
     const formattedOrders = recentOrders.map(order => ({
       _id: order._id,
-      customerName: order.user?.fullName || 'Guest',
+      customerName: order.user?.name || 'Guest',
       createdAt: order.createdAt,
       total: order.total,
       status: order.status
