@@ -13,6 +13,6 @@ orderRouter.get("/order/:orderId", isAuthenticated, hasPermission("get_order_det
 // 🛡️ Admin-only order routes
 orderRouter.get('/admin/all', isAuthenticated, adminOnly, hasPermission("get_all_orders"), getAllOrders);
 
-orderRouter.put('/admin/:orderId/status', isAuthenticated, adminOnly, hasPermission("update_order_status"),updateOrderStatus);
+orderRouter.put('/admin/orders/:orderId/status', isAuthenticated, adminOnly, hasPermission("update_order_status"),updateOrderStatus);
 
 export default orderRouter;
