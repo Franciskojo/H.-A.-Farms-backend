@@ -212,7 +212,7 @@ export const checkoutCart = async (req, res) => {
       shippingAddress,
       paymentMethod,
       paymentStatus: 'pending',
-      orderStatus: 'processing'
+      status: 'processing'
     });
 
     await order.save();
@@ -223,7 +223,7 @@ export const checkoutCart = async (req, res) => {
       order: {
         id: order._id,
         total: order.total,
-        status: order.orderStatus,
+        status: order.status,
         items: order.items,
         createdAt: order.createdAt
       }
