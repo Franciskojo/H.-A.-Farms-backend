@@ -49,7 +49,8 @@ export const permissions = [
       "update_order_status",
       "get_summary",
       "get_all_users",
-      "delete_user"
+      "delete_user",
+      "get_order_by_id"
     ]
   }
 ];

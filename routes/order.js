@@ -15,6 +15,6 @@ orderRouter.get('/admin/all', isAuthenticated, adminOnly, hasPermission("get_all
 
 orderRouter.patch('/admin/orders/:orderId/status', isAuthenticated, adminOnly, hasPermission("update_order_status"),updateOrderStatus);
 
-orderRouter.get("/admin/orders/:orderId", isAuthenticated, isAdmin, getOrderById);
+orderRouter.get("/admin/orders/:orderId", isAuthenticated, hasPermission("get_order_by_id"), adminOnly, getOrderById);
 
 export default orderRouter;
