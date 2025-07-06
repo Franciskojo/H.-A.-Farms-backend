@@ -23,7 +23,7 @@ export const addProduct = async (req, res, next) => {
         const product = await ProductModel.create({
             ...value,
             productImage: productImageUrl || value.productImage,
-            createdBy: req.auth.id?.id
+           createdBy: req.auth.userId,
         });
 
         res.status(201).json({
@@ -76,13 +76,13 @@ export const getProductById = async (req, res, next) => {
 
 export const updateProductById = async (req, res, next) => {
   try {
-    if (!req.auth || !req.auth.id) {
+    if (!req.auth || !req.auth.userId) {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
     const { error, value } = updateProductValidator.validate({
       ...req.body,
-      images: req.file?.path,
+      productImage: req.file?.path,
     });
 
     if (error) {
@@ -92,7 +92,7 @@ export const updateProductById = async (req, res, next) => {
     const product = await ProductModel.findOneAndUpdate(
       {
         _id: req.params.id,
-        createdBy: req.auth.id, // ✅ FIXED
+        createdBy: req.auth.userId, // ✅ Correct field
       },
       value,
       { new: true }
@@ -109,11 +109,12 @@ export const updateProductById = async (req, res, next) => {
 };
 
 
+
 export const deleteProductById = async (req, res, next) => {
   try {
     const product = await ProductModel.findOneAndDelete({
       _id: req.params.id,
-      createdBy: req.auth.id, // ✅ FIXED
+      createdBy: req.auth.userId, // ✅ FIXED
     });
 
     if (!product) {
