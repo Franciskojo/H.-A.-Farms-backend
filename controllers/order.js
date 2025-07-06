@@ -141,3 +141,35 @@ export const updateOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+// ------------------------------
+// Admin: Get single order by ID
+// ------------------------------
+export const getOrderById = async (req, res, next) => {
+  try {
+    if (!req.auth?.role || req.auth.role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    const { orderId } = req.params;
+
+    if (!orderId || !orderId.match(/^[a-f\d]{24}$/i)) {
+      return res.status(400).json({ message: "Invalid order ID format" });
+    }
+
+    const order = await OrderModel.findById(orderId)
+      .populate("user", "name email profilePicture")
+      .populate("items.product", "productName productImage");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json(order);
+  } catch (err) {
+    console.error("Error fetching order by ID:", err);
+    res.status(500).json({ message: "Failed to fetch order details" });
+    next(err);
+  }
+};
+
