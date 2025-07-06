@@ -75,57 +75,55 @@ export const getProductById = async (req, res, next) => {
 };
 
 export const updateProductById = async (req, res, next) => {
-    try {
-        // Authorization check
-        if (!req.auth || !req.auth.id) {
-            return res.status(403).json({ error: 'Unauthorized access' });
-        }
-
-        // Validate request body
-        const { error, value } = updateProductValidator.validate({
-            ...req.body,
-            images: req.file?.path, // optional file support
-        });
-
-        if (error) {
-            return res.status(422).json({ error: error.details });
-        }
-
-        // Update the product
-        const product = await ProductModel.findOneAndUpdate(
-            {
-                _id: req.params.id,
-                user: req.auth.userId,
-            },
-            value,
-            { new: true }
-        );
-
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-
-        return res.status(200).json({ message: 'Product updated successfully', product });
-    } catch (err) {
-        next(err); // pass to error-handling middleware
+  try {
+    if (!req.auth || !req.auth.id) {
+      return res.status(403).json({ error: 'Unauthorized access' });
     }
+
+    const { error, value } = updateProductValidator.validate({
+      ...req.body,
+      images: req.file?.path,
+    });
+
+    if (error) {
+      return res.status(422).json({ error: error.details });
+    }
+
+    const product = await ProductModel.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        createdBy: req.auth.id, // ✅ FIXED
+      },
+      value,
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    return res.status(200).json({ message: 'Product updated successfully', product });
+  } catch (err) {
+    next(err);
+  }
 };
 
 
 export const deleteProductById = async (req, res, next) => {
-    try {
-        const product = await ProductModel.findByIdAndDelete({
-            _id: req.params.id,
-            user: req.auth.userId
-        });
+  try {
+    const product = await ProductModel.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.auth.id, // ✅ FIXED
+    });
 
-        if (!product) {
-            return res.status(404).json("Product not found!");
-        }
-        res.status(200).json("Product deleted.");
-    } catch (error) {
-        next(error);
+    if (!product) {
+      return res.status(404).json("Product not found!");
     }
+
+    res.status(200).json("Product deleted.");
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const filterPaginateProducts = async (req, res) => {
