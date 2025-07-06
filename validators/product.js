@@ -16,7 +16,7 @@ export const productValidator = Joi.object({
   description: Joi.string().trim().required(),
   price: Joi.number().min(0).required(),
   quantity: Joi.number().min(0).default(0),
-  productImage: Joi.string().trim().required,
+  productImage: Joi.string().trim().required(),
 
   category: Joi.string().valid('premium eggs', 'premium chicken', 'farm Inputs').required(),
   // tags: Joi.array().items(Joi.string()).default([]),
