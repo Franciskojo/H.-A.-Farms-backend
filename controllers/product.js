@@ -78,25 +78,38 @@ export const getProductById = async (req, res, next) => {
 
 export const updateProductById = async (req, res, next) => {
   try {
-    if (!req.auth || !req.auth.userId) {
+    // 1. Authentication Check
+    if (!req.auth?.userId) {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
-    // ✅ Parse variants if sent as string
+    // 2. Validate MongoDB ID Format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ 
+        error: 'Invalid product ID format',
+        receivedId: req.params.id
+      });
+    }
+
+    // 3. Parse Variants Safely
     if (req.body.variants && typeof req.body.variants === 'string') {
       try {
         req.body.variants = JSON.parse(req.body.variants);
       } catch (err) {
-        return res.status(400).json({ error: 'Invalid JSON in variants' });
+        return res.status(400).json({ 
+          error: 'Invalid variants format',
+          details: err.message
+        });
       }
     }
 
-    // ✅ Set productImage from uploaded file or fallback to body field
+    // 4. Handle Image Upload
     const productImageUrl = req.file?.path || req.body.productImage;
     if (!productImageUrl) {
       return res.status(400).json({ error: 'Product image is required' });
     }
 
+    // 5. Prepare Update Payload
     const payload = {
       productName: req.body.productName,
       description: req.body.description,
@@ -104,42 +117,78 @@ export const updateProductById = async (req, res, next) => {
       quantity: parseInt(req.body.quantity),
       category: req.body.category,
       status: req.body.status,
-      variants: req.body.variants || [],
+      variants: Array.isArray(req.body.variants) ? req.body.variants.map(variant => ({
+        variantName: variant.variantName,
+        variantPrice: parseFloat(variant.variantPrice) || 0,
+        sku: variant.sku || '',
+        quantity: parseInt(variant.quantity) || 0
+      })) : [],
       productImage: productImageUrl
     };
 
-    // ✅ Validate input
+    // 6. Validate Input
     const { error, value } = updateProductValidator.validate(payload);
     if (error) {
-      return res.status(422).json({ error: error.details[0].message });
+      return res.status(422).json({ 
+        error: 'Validation failed',
+        details: error.details.map(d => d.message)
+      });
     }
 
-    // ✅ Update product
+    // 7. Update Product
     const product = await ProductModel.findOneAndUpdate(
       {
         _id: req.params.id,
         createdBy: req.auth.userId
       },
       value,
-      { new: true }
-    );
+      { new: true, runValidators: true }
+    ).lean();
 
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ 
+        error: 'Product not found or not owned by user',
+        productId: req.params.id,
+        userId: req.auth.userId
+      });
     }
 
+    // 8. Success Response
     res.status(200).json({
       message: 'Product updated successfully',
       product
     });
 
   } catch (err) {
-    console.error('[UPDATE PRODUCT]', err);
+    console.error('[UPDATE PRODUCT ERROR]', {
+      error: err,
+      params: req.params,
+      body: req.body,
+      auth: req.auth,
+      stack: err.stack
+    });
+
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Invalid data format',
+        details: err.message,
+        path: err.path
+      });
+    }
+
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      return res.status(422).json({
+        error: 'Data validation failed',
+        details: Object.values(err.errors).map(e => e.message)
+      });
+    }
+
+    // Generic error handler
     next(err);
   }
 };
-
-
 
 
 export const deleteProductById = async (req, res, next) => {
