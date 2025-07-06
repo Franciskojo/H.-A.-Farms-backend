@@ -77,45 +77,36 @@ export const getProductById = async (req, res, next) => {
 
 export const updateProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    
-    // 🚫 Check for valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Invalid product ID" });
+    if (!req.auth || !req.auth.userId) {
+      return res.status(403).json({ error: 'Unauthorized access' });
     }
 
-    // ✅ Token check
-    const userId = req.auth?.userId || req.auth?.id?.id;
-    if (!userId) {
-      return res.status(403).json({ error: "Unauthorized" });
-    }
-
-    // ✅ Validate payload
     const { error, value } = updateProductValidator.validate({
       ...req.body,
       productImage: req.file?.path || req.body.productImage
     });
 
     if (error) {
-      return res.status(422).json({ error: error.details[0].message });
+      return res.status(422).json({ error: error.details.map(e => e.message).join(', ') });
     }
 
     const product = await ProductModel.findOneAndUpdate(
-      { _id: id, createdBy: userId },
+      { _id: req.params.id, createdBy: req.auth.userId },
       value,
       { new: true }
     );
 
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({ error: 'Product not found' });
     }
 
-    res.json({ message: "Product updated successfully", product });
+    res.status(200).json({ message: 'Product updated successfully', product });
   } catch (err) {
-    console.error("🔥 Error in updateProductById:", err);
-    next(err);
+    console.error('[UPDATE PRODUCT]', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 
 
