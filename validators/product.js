@@ -40,6 +40,7 @@ export const updateProductValidator = Joi.object({
     price: Joi.number(),
     category: Joi.string(),
     status: Joi.string(),
-    variants: Joi.array()
+    variants: Joi.array(),
+    quantity: Joi.number().min(0).optional(),
 
 });
