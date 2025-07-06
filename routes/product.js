@@ -16,7 +16,7 @@ productRouter.get("/products/count", countProducts);
 
 productRouter.get("/products/:id", getProductById);
 
-productRouter.patch("/products/:id", isAuthenticated, hasPermission("update_asset_by_id"), updateProductById);
+productRouter.patch("/products/:id", isAuthenticated, hasPermission("update_product_by_id"), updateProductById);
 
 productRouter.get("/products", filterPaginateProducts);
 
