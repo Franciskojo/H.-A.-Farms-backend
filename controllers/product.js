@@ -77,21 +77,26 @@ export const getProductById = async (req, res, next) => {
 
 export const updateProductById = async (req, res, next) => {
   try {
-    if (!req.auth || !req.auth.userId) {
+    const productId = req.params.id;
+
+    if (!productId || !/^[a-f\d]{24}$/i.test(productId)) {
+      return res.status(400).json({ error: 'Invalid or missing product ID.' });
+    }
+
+    if (!req.auth?.userId) {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
-    const { error, value } = updateProductValidator.validate({
-      ...req.body,
-      productImage: req.file?.path || req.body.productImage
-    });
-
+    const { error, value } = updateProductValidator.validate(req.body);
     if (error) {
-      return res.status(422).json({ error: error.details.map(e => e.message).join(', ') });
+      return res.status(422).json({ error: error.details });
     }
 
     const product = await ProductModel.findOneAndUpdate(
-      { _id: req.params.id, createdBy: req.auth.userId },
+      {
+        _id: productId,
+        createdBy: req.auth.userId,
+      },
       value,
       { new: true }
     );
@@ -100,10 +105,11 @@ export const updateProductById = async (req, res, next) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    res.status(200).json({ message: 'Product updated successfully', product });
+    return res.status(200).json({ message: 'Product updated successfully', product });
+
   } catch (err) {
-    console.error('[UPDATE PRODUCT]', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("[UPDATE PRODUCT]", err);
+    next(err);
   }
 };
 
