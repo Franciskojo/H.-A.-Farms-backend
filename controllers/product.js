@@ -75,8 +75,6 @@ export const getProductById = async (req, res, next) => {
     }
 };
 
-import { ProductModel } from '../models/product.js';
-import { updateProductValidator } from '../validators/product.js';
 
 export const updateProductById = async (req, res, next) => {
   try {
