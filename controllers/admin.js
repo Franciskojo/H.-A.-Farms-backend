@@ -41,11 +41,11 @@ export const getAdminSummary = async (req, res) => {
     const recentOrders = await OrderModel.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate('user', 'fullName');
+      .populate('user', 'name');
 
     const formattedOrders = recentOrders.map(order => ({
       _id: order._id,
-      customerName: order.user?.name || 'Guest',
+      name: order.user?.name || 'Guest',
       createdAt: order.createdAt,
       total: order.total,
       status: order.status
