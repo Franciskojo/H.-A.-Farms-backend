@@ -75,40 +75,40 @@ export const getProductById = async (req, res, next) => {
 };
 
 export const updateProductById = async (req, res, next) => {
-  try {
-    // Authorization check
-    if (!req.auth || !req.auth.id) {
-      return res.status(403).json({ error: 'Unauthorized access' });
+    try {
+        // Authorization check
+        if (!req.auth || !req.auth.id) {
+            return res.status(403).json({ error: 'Unauthorized access' });
+        }
+
+        // Validate request body
+        const { error, value } = updateProductValidator.validate({
+            ...req.body,
+            images: req.file?.path, // optional file support
+        });
+
+        if (error) {
+            return res.status(422).json({ error: error.details });
+        }
+
+        // Update the product
+        const product = await ProductModel.findOneAndUpdate(
+            {
+                _id: req.params.id,
+                user: req.auth.userId,
+            },
+            value,
+            { new: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        return res.status(200).json({ message: 'Product updated successfully', product });
+    } catch (err) {
+        next(err); // pass to error-handling middleware
     }
-
-    // Validate request body
-    const { error, value } = updateProductValidator.validate({
-      ...req.body,
-      images: req.file?.path, // optional file support
-    });
-
-    if (error) {
-      return res.status(422).json({ error: error.details });
-    }
-
-    // Update the product
-    const product = await ProductModel.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user: req.auth.userId,
-      },
-      value,
-      { new: true }
-    );
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    return res.status(200).json({ message: 'Product updated successfully', product });
-  } catch (err) {
-    next(err); // pass to error-handling middleware
-  }
 };
 
 
@@ -161,46 +161,47 @@ export const filterPaginateProducts = async (req, res) => {
 
 // GET /admin/products
 export const getAdminProducts = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-    const [products, total] = await Promise.all([
-      ProductModel.find()
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 }),
-      ProductModel.countDocuments()
-    ]);
+        const [products, total] = await Promise.all([
+            ProductModel.find()
+                .select('_id productName price status quantity category productImage') // ✅ Keep _id
+                .skip(skip)
+                .limit(limit)
+                .sort({ createdAt: -1 }),
+            ProductModel.countDocuments()
+        ]);
 
-    res.json({
-      products,
-      page,
-      totalPages: Math.ceil(total / limit),
-      totalProducts: total
-    });
-  } catch (err) {
-    console.error('[ADMIN GET PRODUCTS]', err);
-    res.status(500).json({ message: 'Failed to load products' });
-  }
+        res.json({
+            products,
+            page,
+            totalPages: Math.ceil(total / limit),
+            totalProducts: total
+        });
+    } catch (err) {
+        console.error('[ADMIN GET PRODUCTS]', err);
+        res.status(500).json({ message: 'Failed to load products' });
+    }
 };
 
 // DELETE /admin/products/:id
 export const deleteAdminProduct = async (req, res) => {
-  try {
-    const productId = req.params.id;
+    try {
+        const productId = req.params.id;
 
-    const deleted = await ProductModel.findByIdAndDelete(productId);
-    if (!deleted) {
-      return res.status(404).json({ message: 'Product not found' });
+        const deleted = await ProductModel.findByIdAndDelete(productId);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        console.error('[ADMIN DELETE PRODUCT]', err);
+        res.status(500).json({ message: 'Failed to delete product' });
     }
-
-    res.json({ message: 'Product deleted successfully' });
-  } catch (err) {
-    console.error('[ADMIN DELETE PRODUCT]', err);
-    res.status(500).json({ message: 'Failed to delete product' });
-  }
 };
 
 
