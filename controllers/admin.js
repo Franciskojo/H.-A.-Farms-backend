@@ -6,7 +6,7 @@ export const getAdminSummary = async (req, res) => {
   try {
     const { range, start, end } = req.query;
 
-    // 1. Determine date range
+    // 1. Date range
     let startDate;
     if (range === 'month') {
       startDate = new Date();
@@ -18,7 +18,7 @@ export const getAdminSummary = async (req, res) => {
       startDate = new Date(start);
     } else {
       startDate = new Date();
-      startDate.setDate(startDate.getDate() - 6); // default to week
+      startDate.setDate(startDate.getDate() - 6); // default: week
     }
 
     const endDate = end ? new Date(end + 'T23:59:59') : new Date();
@@ -30,22 +30,30 @@ export const getAdminSummary = async (req, res) => {
     ]);
     const totalRevenue = revenueAgg?.[0]?.total ?? 0;
 
-    // 3. Entity counts
+    // 3. Counts
     const [totalOrders, totalProducts, totalUsers] = await Promise.all([
       OrderModel.countDocuments(),
       ProductModel.countDocuments(),
-      UserModel.countDocuments({ role: { $ne: 'admin' } }),
+      UserModel.countDocuments({ role: { $ne: 'admin' } })
     ]);
 
     // 4. Recent orders
-    const recentOrders = await OrderModel.find()
+    const recentOrdersRaw = await OrderModel.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate('user', 'name');
+      .populate('user', 'name email profilePicture');
 
-    const formattedOrders = recentOrders.map(order => ({
+    const recentOrders = recentOrdersRaw.map(order => ({
       _id: order._id,
-      name: order.user?.name || 'Guest',
+      user: order.user ? {
+        name: order.user.name,
+        email: order.user.email,
+        profilePicture: order.user.profilePicture
+      } : {
+        name: 'Guest',
+        email: '',
+        profilePicture: ''
+      },
       createdAt: order.createdAt,
       total: order.total,
       status: order.status
@@ -89,15 +97,15 @@ export const getAdminSummary = async (req, res) => {
       data: revenueBreakdown.map(r => r.amount)
     };
 
-    // ✅ Always return valid chart data structures to avoid frontend crashes
+    // ✅ Response
     res.json({
       totalRevenue,
       totalOrders,
       totalProducts,
       totalUsers,
-      recentOrders: formattedOrders,
-      salesChartData: (salesChartData.labels?.length ? salesChartData : { labels: [], data: [] }),
-      revenueSources: (revenueSources.labels?.length ? revenueSources : { labels: [], data: [] })
+      recentOrders,
+      salesChartData: salesChartData.labels?.length ? salesChartData : { labels: [], data: [] },
+      revenueSources: revenueSources.labels?.length ? revenueSources : { labels: [], data: [] }
     });
 
   } catch (err) {
