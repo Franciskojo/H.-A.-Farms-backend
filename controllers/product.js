@@ -75,27 +75,52 @@ export const getProductById = async (req, res, next) => {
     }
 };
 
+import { ProductModel } from '../models/product.js';
+import { updateProductValidator } from '../validators/product.js';
+
 export const updateProductById = async (req, res, next) => {
   try {
-    const productId = req.params.id;
-
-    if (!productId || !/^[a-f\d]{24}$/i.test(productId)) {
-      return res.status(400).json({ error: 'Invalid or missing product ID.' });
-    }
-
-    if (!req.auth?.userId) {
+    if (!req.auth || !req.auth.userId) {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
-    const { error, value } = updateProductValidator.validate(req.body);
-    if (error) {
-      return res.status(422).json({ error: error.details });
+    // ✅ Parse variants if sent as string
+    if (req.body.variants && typeof req.body.variants === 'string') {
+      try {
+        req.body.variants = JSON.parse(req.body.variants);
+      } catch (err) {
+        return res.status(400).json({ error: 'Invalid JSON in variants' });
+      }
     }
 
+    // ✅ Set productImage from uploaded file or fallback to body field
+    const productImageUrl = req.file?.path || req.body.productImage;
+    if (!productImageUrl) {
+      return res.status(400).json({ error: 'Product image is required' });
+    }
+
+    const payload = {
+      productName: req.body.productName,
+      description: req.body.description,
+      price: parseFloat(req.body.price),
+      quantity: parseInt(req.body.quantity),
+      category: req.body.category,
+      status: req.body.status,
+      variants: req.body.variants || [],
+      productImage: productImageUrl
+    };
+
+    // ✅ Validate input
+    const { error, value } = updateProductValidator.validate(payload);
+    if (error) {
+      return res.status(422).json({ error: error.details[0].message });
+    }
+
+    // ✅ Update product
     const product = await ProductModel.findOneAndUpdate(
       {
-        _id: productId,
-        createdBy: req.auth.userId,
+        _id: req.params.id,
+        createdBy: req.auth.userId
       },
       value,
       { new: true }
@@ -105,10 +130,13 @@ export const updateProductById = async (req, res, next) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    return res.status(200).json({ message: 'Product updated successfully', product });
+    res.status(200).json({
+      message: 'Product updated successfully',
+      product
+    });
 
   } catch (err) {
-    console.error("[UPDATE PRODUCT]", err);
+    console.error('[UPDATE PRODUCT]', err);
     next(err);
   }
 };
