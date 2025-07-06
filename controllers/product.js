@@ -157,3 +157,51 @@ export const filterPaginateProducts = async (req, res) => {
 };
 
 
+
+
+// GET /admin/products
+export const getAdminProducts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      ProductModel.find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      ProductModel.countDocuments()
+    ]);
+
+    res.json({
+      products,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalProducts: total
+    });
+  } catch (err) {
+    console.error('[ADMIN GET PRODUCTS]', err);
+    res.status(500).json({ message: 'Failed to load products' });
+  }
+};
+
+// DELETE /admin/products/:id
+export const deleteAdminProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const deleted = await ProductModel.findByIdAndDelete(productId);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    console.error('[ADMIN DELETE PRODUCT]', err);
+    res.status(500).json({ message: 'Failed to delete product' });
+  }
+};
+
+
+

@@ -50,7 +50,8 @@ export const permissions = [
       "get_summary",
       "get_all_users",
       "delete_user",
-      "get_order_by_id"
+      "get_order_by_id", 
+      "get_admin_products"
     ]
   }
 ];

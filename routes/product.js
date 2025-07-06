@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { imageUpload } from "../middlewares/cloudinary.js";
-import { isAuthenticated, hasPermission } from "../middlewares/auth.js";
-import { addProduct, countProducts, deleteProductById, filterPaginateProducts, getProductById, getProducts, updateProductById } from "../controllers/product.js";
+import { isAuthenticated, hasPermission, adminOnly } from "../middlewares/auth.js";
+import { addProduct, countProducts, deleteProductById, filterPaginateProducts, getAdminProducts, getProductById, getProducts, updateProductById } from "../controllers/product.js";
 
 
 const productRouter = Router();
@@ -18,9 +18,14 @@ productRouter.get("/products/:id", getProductById);
 
 productRouter.patch("/products/:id", isAuthenticated, hasPermission("update_asset_by_id"), updateProductById);
 
-productRouter.delete("/products", isAuthenticated, hasPermission("delete_asset_by_id"), deleteProductById);
-
 productRouter.get("/products", filterPaginateProducts);
+
+
+
+// for adminOnly
+productRouter.get("/admin/products", isAuthenticated, hasPermission("get_admin_products"), adminOnly, getAdminProducts);
+
+productRouter.delete("/admin/products", isAuthenticated, hasPermission("delete_asset_by_id"), adminOnly,  deleteProductById);
 
 
 export default productRouter
