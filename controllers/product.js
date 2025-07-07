@@ -3,39 +3,43 @@ import { productValidator, updateProductValidator } from "../validators/product.
 import mongoose from 'mongoose';
 
 export const addProduct = async (req, res, next) => {
-    try {
-        // ✅ Parse variants if it exists and is a string
-        if (req.body.variants && typeof req.body.variants === 'string') {
-            try {
-                req.body.variants = JSON.parse(req.body.variants);
-            } catch (err) {
-                return res.status(400).json({ error: "Invalid JSON in variants field" });
-            }
-        }
-
-        // ✅ Validate input after parsing
-        const { error, value } = productValidator.validate(req.body);
-        if (error) {
-            return res.status(422).json({ error: error.details[0].message });
-        }
-
-        // ✅ Create product
-        const productImageUrl = req.file?.path;
-        const product = await ProductModel.create({
-            ...value,
-            productImage: productImageUrl || value.productImage,
-           createdBy: req.auth.userId,
-        });
-
-        res.status(201).json({
-            message: `Product "${product.productName}" added successfully.`,
-            product
-        });
-
-    } catch (error) {
-        next(error);
+  try {
+    // ✅ Inject image path into req.body BEFORE validation
+    if (req.file?.path) {
+      req.body.productImage = req.file.path;
     }
+
+    // ✅ Parse variants
+    if (req.body.variants && typeof req.body.variants === 'string') {
+      try {
+        req.body.variants = JSON.parse(req.body.variants);
+      } catch (err) {
+        return res.status(400).json({ error: "Invalid JSON in variants field" });
+      }
+    }
+
+    // ✅ Validate input
+    const { error, value } = productValidator.validate(req.body);
+    if (error) {
+      return res.status(422).json({ error: error.details[0].message });
+    }
+
+    // ✅ Create product
+    const product = await ProductModel.create({
+      ...value,
+      createdBy: req.auth.userId,
+    });
+
+    res.status(201).json({
+      message: `Product "${product.productName}" added successfully.`,
+      product
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 export const getProducts = async (req, res, next) => {
     try {
