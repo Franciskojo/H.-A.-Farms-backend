@@ -3,7 +3,7 @@ import Joi from "joi";
 // Variant validation schema
 export const variantValidator = Joi.object({
   variantName: Joi.string().trim().required(),
-  price: Joi.number().min(0).required(),
+  variantPrice: Joi.number().min(0).required(),
   sku: Joi.string().trim(),
   quantity: Joi.number().min(0).default(0),
   isDefault: Joi.boolean().default(false)
