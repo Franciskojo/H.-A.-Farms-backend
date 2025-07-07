@@ -4,32 +4,25 @@ import mongoose from 'mongoose';
 
 export const addProduct = async (req, res, next) => {
   try {
-    // ✅ Inject image path into req.body BEFORE validation
+    // ✅ Inject Cloudinary image URL into body before Joi validation
     if (req.file?.path) {
       req.body.productImage = req.file.path;
     }
 
-    // ✅ Parse variants
-    if (req.body.variants && typeof req.body.variants === 'string') {
-      try {
-        req.body.variants = JSON.parse(req.body.variants);
-      } catch (err) {
-        return res.status(400).json({ error: "Invalid JSON in variants field" });
-      }
-    }
 
-    // ✅ Validate input
+    // ✅ Validate product input with Joi
     const { error, value } = productValidator.validate(req.body);
     if (error) {
       return res.status(422).json({ error: error.details[0].message });
     }
 
-    // ✅ Create product
+    // ✅ Create product with validated data
     const product = await ProductModel.create({
       ...value,
-      createdBy: req.auth.userId,
+      createdBy: req.auth?.userId, // add optional chaining to be safe
     });
 
+    // ✅ Respond with success
     res.status(201).json({
       message: `Product "${product.productName}" added successfully.`,
       product
@@ -39,6 +32,7 @@ export const addProduct = async (req, res, next) => {
     next(error);
   }
 };
+
 
 
 export const getProducts = async (req, res, next) => {

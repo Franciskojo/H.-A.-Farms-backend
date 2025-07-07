@@ -1,13 +1,6 @@
 import { Schema, model } from "mongoose";
 import { toJSON } from "@reis/mongoose-to-json";
 
-const variantSchema = new Schema({
-  variantName: { type: String, required: true, trim: true },
-  variantPrice: { type: Number, required: true, min: 0 },
-  sku: { type: String, trim: true },
-  quantity: { type: Number, default: 0, min: 0 },
-  isDefault: { type: Boolean, default: false }
-}, { _id: true });
 
 const productSchema = new Schema({
   productName: { type: String, required: true, trim: true, maxlength: 100 },
@@ -26,18 +19,6 @@ const productSchema = new Schema({
     default: 'active'
   },
   productImage: { type: String, required: true },
-
-  variants: {
-    type: [variantSchema],
-    default: () => [{
-      variantName: 'Default Variant',
-      variantPrice: 0,
-      sku: '',
-      quantity: 0,
-      isDefault: true
-    }]
-  },
-
   trackInventory: { type: Boolean, default: false },
   isPhysicalProduct: { type: Boolean, default: true }
 

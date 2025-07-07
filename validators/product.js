@@ -1,13 +1,13 @@
 import Joi from "joi";
 
 // Variant validation schema
-export const variantValidator = Joi.object({
-  variantName: Joi.string().trim().required(),
-  variantPrice: Joi.number().min(0).required(),
-  sku: Joi.string().trim(),
-  quantity: Joi.number().min(0).default(0),
-  isDefault: Joi.boolean().default(false)
-});
+// export const variantValidator = Joi.object({
+//   variantName: Joi.string().trim().required(),
+//   variantPrice: Joi.number().min(0).required(),
+//   sku: Joi.string().trim(),
+//   quantity: Joi.number().min(0).default(0),
+//   isDefault: Joi.boolean().default(false)
+// });
 
 
 // Product validation schema
@@ -22,12 +22,12 @@ export const productValidator = Joi.object({
   // tags: Joi.array().items(Joi.string()).default([]),
 
   status: Joi.string().valid('draft', 'active', 'archived').default('draft'),
-  variants: Joi.array().items(variantValidator).default(() => [{
-    name: 'Default Variant',
-    variantPrice: 0,
-    sku: '',
-    isDefault: true
-  }]),
+  // variants: Joi.array().items(variantValidator).default(() => [{
+  //   name: 'Default Variant',
+  //   variantPrice: 0,
+  //   sku: '',
+  //   isDefault: true
+  // }]),
 
   trackInventory: Joi.boolean().default(false),
   isPhysicalProduct: Joi.boolean().default(true)
@@ -40,7 +40,7 @@ export const updateProductValidator = Joi.object({
     price: Joi.number(),
     category: Joi.string(),
     status: Joi.string(),
-    variants: Joi.array(),
+    // variants: Joi.array(),
     quantity: Joi.number().min(0).optional(),
 
 });
