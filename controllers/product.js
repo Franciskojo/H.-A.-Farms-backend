@@ -89,18 +89,6 @@ export const updateProductById = async (req, res, next) => {
       });
     }
 
-    // 3. Parse Variants Safely
-    if (req.body.variants && typeof req.body.variants === 'string') {
-      try {
-        req.body.variants = JSON.parse(req.body.variants);
-      } catch (err) {
-        return res.status(400).json({ 
-          error: 'Invalid variants format',
-          details: err.message
-        });
-      }
-    }
-
     // 4. Handle Image Upload
     const productImageUrl = req.file?.path || req.body.productImage;
     if (!productImageUrl) {
@@ -115,12 +103,6 @@ export const updateProductById = async (req, res, next) => {
       quantity: parseInt(req.body.quantity),
       category: req.body.category,
       status: req.body.status,
-      variants: Array.isArray(req.body.variants) ? req.body.variants.map(variant => ({
-        variantName: variant.variantName,
-        variantPrice: parseFloat(variant.variantPrice) || 0,
-        sku: variant.sku || '',
-        quantity: parseInt(variant.quantity) || 0
-      })) : [],
       productImage: productImageUrl
     };
 
