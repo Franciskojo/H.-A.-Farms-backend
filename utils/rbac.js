@@ -28,7 +28,7 @@ export const permissions = [
       "update_product_by_id",
       "get_product_by_id",
       "get_products",
-      "delete_product",
+      "delete_product_by_productId",
       "count_products",
       "download_orders_csv",
       "download_orders_xlsx",

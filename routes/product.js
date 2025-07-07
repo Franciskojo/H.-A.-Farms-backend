@@ -25,7 +25,7 @@ productRouter.get("/products", filterPaginateProducts);
 // for adminOnly
 productRouter.get("/admin/products", isAuthenticated, hasPermission("get_admin_products"), adminOnly, getAdminProducts);
 
-productRouter.delete("/admin/products", isAuthenticated, hasPermission("delete_asset_by_id"), adminOnly,  deleteProductById);
+productRouter.delete("/admin/products/:productId", isAuthenticated, hasPermission("delete_product_by_productId"), adminOnly,  deleteProductById);
 
 
 export default productRouter
