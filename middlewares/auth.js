@@ -35,7 +35,7 @@ export const hasPermission = (action) => {
   };
 };
 
-// 3. Admin-only route guard
+// Admin-only route guard
 export const adminOnly = (req, res, next) => {
   if (req.auth?.role === 'admin') {
     return next();

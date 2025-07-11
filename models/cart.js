@@ -6,7 +6,7 @@ const cartItemSchema = new Schema({
   product: { type: Types.ObjectId, ref: "Product", required: true },
   quantity: { type: Number, required: true, min: 1, default: 1 },
   price: { type: Number, required: true },
-}, { _id: false });
+});
 
 // Cart schema
 const cartSchema = new Schema({
@@ -24,7 +24,7 @@ cartSchema.virtual('subtotal').get(function () {
   return this.items.reduce((total, item) => total + item.price * item.quantity, 0);
 });
 cartSchema.virtual('tax').get(function () {
-  return this.subtotal * 0.1;
+  return this.subtotal * 0.0;
 });
 cartSchema.virtual('shipping').get(function () {
   return 0;
