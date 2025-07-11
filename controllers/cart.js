@@ -134,6 +134,17 @@ export const removeFromCart = async (req, res) => {
   }
 };
 
+// ✅ Define helper function
+function formatCartResponse(cart) {
+  return {
+    items: cart.items,
+    subtotal: cart.subtotal,
+    tax: cart.tax,
+    shipping: cart.shipping,
+    total: cart.total
+  };
+}
+
 
 export const removeFromCartByProductId = async (req, res) => {
   try {
