@@ -14,7 +14,7 @@ cartRouter.post("/cart/add", isAuthenticated, hasPermission("add_to_cart"), addT
 cartRouter.get("/cart/get", isAuthenticated, hasPermission("get_cart"), getCart);
 
 // PUT /api/cart/items/:itemId - Update cart item quantity
-cartRouter.put("/cart/items/:itemId", isAuthenticated, hasPermission("update_cart_item"), updateCartItem);
+cartRouter.patch("/cart/items/:itemId", isAuthenticated, hasPermission("update_cart_item"), updateCartItem);
 
 cartRouter.delete("/cart/items/:itemId", isAuthenticated, hasPermission("remove_cart"), removeFromCart);
 
