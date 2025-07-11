@@ -20,36 +20,36 @@ const cartSchema = new Schema({
 });
 
 // Virtuals
-cartSchema.virtual('subtotal').get(function () {
-  return this.items.reduce((total, item) => total + item.price * item.quantity, 0);
-});
-cartSchema.virtual('tax').get(function () {
-  return this.subtotal * 0.0;
-});
-cartSchema.virtual('shipping').get(function () {
-  return 0;
-});
-cartSchema.virtual('total').get(function () {
-  return this.subtotal + this.tax + this.shipping;
-});
+// cartSchema.virtual('subtotal').get(function () {
+//   return this.items.reduce((total, item) => total + item.price * item.quantity, 0);
+// });
+// cartSchema.virtual('tax').get(function () {
+//   return this.subtotal * 0.0;
+// });
+// cartSchema.virtual('shipping').get(function () {
+//   return 0;
+// });
+// cartSchema.virtual('total').get(function () {
+//   return this.subtotal + this.tax + this.shipping;
+// });
 
 // Pre-save updatedAt
-cartSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+// cartSchema.pre('save', function (next) {
+//   this.updatedAt = Date.now();
+//   next();
+// });
 
 // Method to add item
-cartSchema.methods.addItem = function (productId, price, quantity = 1) {
-  const existingItem = this.items.find(item => item.product.toString() === productId.toString());
-  if (existingItem) {
-    existingItem.quantity += quantity;
-  } else {
-    this.items.push({ product: productId, quantity, price });
-  }
-  this.updatedAt = Date.now();
-  return this.save();
-};
+// cartSchema.methods.addItem = function (productId, price, quantity = 1) {
+//   const existingItem = this.items.find(item => item.product.toString() === productId.toString());
+//   if (existingItem) {
+//     existingItem.quantity += quantity;
+//   } else {
+//     this.items.push({ product: productId, quantity, price });
+//   }
+//   this.updatedAt = Date.now();
+//   return this.save();
+// };
 
 // Index for lookup
 cartSchema.index({ 'items.product': 1 });
