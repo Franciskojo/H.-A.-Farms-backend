@@ -5,54 +5,49 @@ import { toJSON } from "@reis/mongoose-to-json";
 const cartItemSchema = new Schema({
   product: { type: Types.ObjectId, ref: "Product", required: true },
   quantity: { type: Number, required: true, min: 1, default: 1 },
-  price: { type: Number, required: true },
+  price: { type: Number, required: true }, // Price at time of adding
 });
 
 // Cart schema
-const cartSchema = new Schema({
-  user: { type: Types.ObjectId, ref: 'User', required: true, unique: true },
-  items: [cartItemSchema],
-  updatedAt: { type: Date, default: Date.now }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+const cartSchema = new Schema(
+  {
+    user: { type: Types.ObjectId, ref: "User", required: true, unique: true },
+    items: [cartItemSchema],
+    updatedAt: { type: Date, default: Date.now }
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
+);
+
+// ✅ Add a reusable instance method
+cartSchema.methods.addItem = async function (productId, price, quantity) {
+  // Find if the item already exists
+  const existingItem = this.items.find(
+    (item) => item.product.toString() === productId.toString()
+  );
+
+  if (existingItem) {
+    // If exists, just increment quantity
+    existingItem.quantity += quantity;
+  } else {
+    // Otherwise, push a new item
+    this.items.push({ product: productId, price, quantity });
+  }
+
+  // Update timestamp
+  this.updatedAt = Date.now();
+
+  // Save the cart
+  return this.save();
+};
+
+// ✅ (Optional) Virtual for subtotal calculation
+cartSchema.virtual("subtotal").get(function () {
+  return this.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 });
-
-// Virtuals
-// cartSchema.virtual('subtotal').get(function () {
-//   return this.items.reduce((total, item) => total + item.price * item.quantity, 0);
-// });
-// cartSchema.virtual('tax').get(function () {
-//   return this.subtotal * 0.0;
-// });
-// cartSchema.virtual('shipping').get(function () {
-//   return 0;
-// });
-// cartSchema.virtual('total').get(function () {
-//   return this.subtotal + this.tax + this.shipping;
-// });
-
-// Pre-save updatedAt
-// cartSchema.pre('save', function (next) {
-//   this.updatedAt = Date.now();
-//   next();
-// });
-
-// Method to add item
-// cartSchema.methods.addItem = function (productId, price, quantity = 1) {
-//   const existingItem = this.items.find(item => item.product.toString() === productId.toString());
-//   if (existingItem) {
-//     existingItem.quantity += quantity;
-//   } else {
-//     this.items.push({ product: productId, quantity, price });
-//   }
-//   this.updatedAt = Date.now();
-//   return this.save();
-// };
-
-// Index for lookup
-cartSchema.index({ 'items.product': 1 });
 
 cartSchema.plugin(toJSON);
 

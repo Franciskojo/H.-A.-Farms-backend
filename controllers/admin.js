@@ -59,43 +59,54 @@ export const getAdminSummary = async (req, res) => {
       status: order.status
     }));
 
-    // 5. Sales chart
-    const salesData = await OrderModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
-          status: { $nin: ['cancelled'] }
-        }
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          dailySales: { $sum: "$total" }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    // 5. Sales chart (monthly)
+const salesData = await OrderModel.aggregate([
+  {
+    $match: {
+      createdAt: { $gte: startDate, $lte: endDate },
+      status: { $nin: ['cancelled'] }
+    }
+  },
+  {
+    $group: {
+      _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, 
+      monthlySales: { $sum: "$total" } 
+    }
+  },
+  { $sort: { _id: 1 } } 
+]);
 
-    const salesChartData = {
-      labels: salesData.map(d => d._id),
-      data: salesData.map(d => d.dailySales)
-    };
+const salesChartData = {
+  labels: salesData.map(m => m._id),            
+  data: salesData.map(m => m.monthlySales)
+};
 
-    // 6. Revenue sources chart
-    const revenueBreakdown = await OrderModel.aggregate([
-      { $match: { status: { $nin: ['cancelled'] } } },
-      {
-        $group: {
-          _id: "$paymentMethod",
-          amount: { $sum: "$total" }
-        }
-      }
-    ]);
+    // 6. Revenue sources chart (by product category)
+const categoryRevenue = await OrderModel.aggregate([
+  { $match: { status: { $nin: ['cancelled'] } } },  
+  { $unwind: "$items" },                            
+  {
+    $lookup: {
+      from: "products",            
+      localField: "items.productId",
+      foreignField: "_id",
+      as: "productInfo"
+    }
+  },
+  { $unwind: "$productInfo" },                     
+  {
+    $group: {
+      _id: "$productInfo.category",                
+      amount: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
+    }
+  },
+  { $sort: { amount: -1 } }                        
+]);
 
-    const revenueSources = {
-      labels: revenueBreakdown.map(r => r._id),
-      data: revenueBreakdown.map(r => r.amount)
-    };
+const revenueSources = {
+  labels: categoryRevenue.map(c => c._id),
+  data: categoryRevenue.map(c => c.amount)
+};
 
     // ✅ Response
     res.json({
