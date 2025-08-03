@@ -38,8 +38,8 @@ export const addProduct = async (req, res, next) => {
 export const getProducts = async (req, res, next) => {
   try {
     const {
-      search = "",         
-      sort = "{}",          
+      search = "",
+      sort = "{}",
       limit = 15,
       skip = 0
     } = req.query;
@@ -47,21 +47,26 @@ export const getProducts = async (req, res, next) => {
     // Build filter to search across multiple fields
     const filter = search
       ? {
-          $or: [
-            { productName: { $regex: search, $options: "i" } },
-            { category: { $regex: search, $options: "i" } },
-            { description: { $regex: search, $options: "i" } }
-          ]
-        }
+        $or: [
+          { productName: { $regex: search, $options: "i" } },
+          { category: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } }
+        ]
+      }
       : {};
 
     // Fetch products from the database
+    const total = await ProductModel.countDocuments(filter);
+
     const products = await ProductModel.find(filter)
       .sort(JSON.parse(sort))
       .limit(parseInt(limit))
       .skip(parseInt(skip));
 
-    res.status(200).json(products);
+    res.status(200).json({
+      products,
+      total
+    });
   } catch (error) {
     next(error);
   }
@@ -69,26 +74,26 @@ export const getProducts = async (req, res, next) => {
 
 
 export const countProducts = async (req, res, next) => {
-    try {
-        const { filter = "{}" } = req.query;
-        // Count products in database
-        const count = await ProductModel.countdocuments(JSON.parse(filter));
-        // Respond to request
-        res.json({ count });
-    } catch (error) {
-        next(error);
-    }
+  try {
+    const { filter = "{}" } = req.query;
+    // Count products in database
+    const count = await ProductModel.countdocuments(JSON.parse(filter));
+    // Respond to request
+    res.json({ count });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getProductById = async (req, res, next) => {
-    try {
-        // Fetch a product from database
-        const product = await ProductModel.findById(req.params.id);
-        // Return Response
-        res.status(200).json(product);
-    } catch (error) {
-        next(error);
-    }
+  try {
+    // Fetch a product from database
+    const product = await ProductModel.findById(req.params.id);
+    // Return Response
+    res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
 };
 
 
@@ -101,7 +106,7 @@ export const updateProductById = async (req, res, next) => {
 
     // 2. Validate MongoDB ID Format
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid product ID format',
         receivedId: req.params.id
       });
@@ -127,7 +132,7 @@ export const updateProductById = async (req, res, next) => {
     // 6. Validate Input
     const { error, value } = updateProductValidator.validate(payload);
     if (error) {
-      return res.status(422).json({ 
+      return res.status(422).json({
         error: 'Validation failed',
         details: error.details.map(d => d.message)
       });
@@ -144,7 +149,7 @@ export const updateProductById = async (req, res, next) => {
     ).lean();
 
     if (!product) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Product not found or not owned by user',
         productId: req.params.id,
         userId: req.auth.userId
@@ -207,31 +212,31 @@ export const deleteProductById = async (req, res, next) => {
 
 
 export const filterPaginateProducts = async (req, res) => {
-    try {
-        const { category, isOrganic, page = 1, limit = 10 } = req.query;
+  try {
+    const { category, isOrganic, page = 1, limit = 10 } = req.query;
 
-        // Build filter object based on query parameters
-        const filters = {};
-        if (category) filters.category = category;
-        if (isOrganic !== undefined) filters.isOrganic = isOrganic;
+    // Build filter object based on query parameters
+    const filters = {};
+    if (category) filters.category = category;
+    if (isOrganic !== undefined) filters.isOrganic = isOrganic;
 
-        // Pagination calculations
-        const skip = (page - 1) * limit;
-        const products = await ProductModel.find(filters)
-            .limit(Number(limit))
-            .skip(skip);
+    // Pagination calculations
+    const skip = (page - 1) * limit;
+    const products = await ProductModel.find(filters)
+      .limit(Number(limit))
+      .skip(skip);
 
-        const total = await ProductModel.countDocuments(filters);
+    const total = await ProductModel.countDocuments(filters);
 
-        res.json({
-            products,
-            totalPages: Math.ceil(total / limit),
-            currentPage: Number(page),
-            total,
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    res.json({
+      products,
+      totalPages: Math.ceil(total / limit),
+      currentPage: Number(page),
+      total,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 
@@ -239,47 +244,47 @@ export const filterPaginateProducts = async (req, res) => {
 
 // GET /admin/products
 export const getAdminProducts = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        const [products, total] = await Promise.all([
-            ProductModel.find()
-                .select('_id productName price status quantity category productImage') // ✅ Keep _id
-                .skip(skip)
-                .limit(limit)
-                .sort({ createdAt: -1 }),
-            ProductModel.countDocuments()
-        ]);
+    const [products, total] = await Promise.all([
+      ProductModel.find()
+        .select('_id productName price status quantity category productImage') // ✅ Keep _id
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      ProductModel.countDocuments()
+    ]);
 
-        res.json({
-            products,
-            page,
-            totalPages: Math.ceil(total / limit),
-            totalProducts: total
-        });
-    } catch (err) {
-        console.error('[ADMIN GET PRODUCTS]', err);
-        res.status(500).json({ message: 'Failed to load products' });
-    }
+    res.json({
+      products,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalProducts: total
+    });
+  } catch (err) {
+    console.error('[ADMIN GET PRODUCTS]', err);
+    res.status(500).json({ message: 'Failed to load products' });
+  }
 };
 
 // DELETE /admin/products/:id
 export const deleteAdminProduct = async (req, res) => {
-    try {
-        const productId = req.params.id;
+  try {
+    const productId = req.params.id;
 
-        const deleted = await ProductModel.findByIdAndDelete(productId);
-        if (!deleted) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        res.json({ message: 'Product deleted successfully' });
-    } catch (err) {
-        console.error('[ADMIN DELETE PRODUCT]', err);
-        res.status(500).json({ message: 'Failed to delete product' });
+    const deleted = await ProductModel.findByIdAndDelete(productId);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Product not found' });
     }
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    console.error('[ADMIN DELETE PRODUCT]', err);
+    res.status(500).json({ message: 'Failed to delete product' });
+  }
 };
 
 
