@@ -36,19 +36,44 @@ export const addProduct = async (req, res, next) => {
 
 
 export const getProducts = async (req, res, next) => {
-    try {
-        const { filter = "{}", sort = "{}", limit = 15, skip = 0 } = req.query;
-        // Fetch product from database
-        const products = await ProductModel.find(JSON.parse(filter))
-            .sort(JSON.parse(sort))
-            .limit(limit)
-            .skip(skip);
-        // Return response
-        res.status(200).json(products);
-    } catch (error) {
-        next(error);
-    }
+  try {
+    const {
+      search = "",         
+      sort = "{}",          
+      limit = 15,
+      skip = 0
+    } = req.query;
+
+    // Build filter to search across multiple fields
+    const filter = search
+      ? {
+          $or: [
+            { productName: { $regex: search, $options: "i" } },
+            { category: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+          ]
+        }
+      : {};
+
+    // Get total matching count
+    const total = await ProductModel.countDocuments(filter);
+
+    // Get paginated products
+    const products = await ProductModel.find(filter)
+      .sort(JSON.parse(sort))
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+
+    res.status(200).json({
+      total,      
+      count: products.length, 
+      products   
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 export const countProducts = async (req, res, next) => {
     try {
