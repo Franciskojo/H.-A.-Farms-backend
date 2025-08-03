@@ -55,20 +55,13 @@ export const getProducts = async (req, res, next) => {
         }
       : {};
 
-    // Get total matching count
-    const total = await ProductModel.countDocuments(filter);
-
-    // Get paginated products
+    // Fetch products from the database
     const products = await ProductModel.find(filter)
       .sort(JSON.parse(sort))
       .limit(parseInt(limit))
       .skip(parseInt(skip));
 
-    res.status(200).json({
-      total,      
-      count: products.length, 
-      products   
-    });
+    res.status(200).json(products);
   } catch (error) {
     next(error);
   }
