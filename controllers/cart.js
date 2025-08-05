@@ -1,6 +1,7 @@
 import { CartModel } from "../models/cart.js";
 import { ProductModel } from "../models/product.js";
 import { OrderModel } from "../models/order.js";
+import { mailTransport } from "../utils/mail.js";
 import mongoose from "mongoose";
 
 // Get cart
