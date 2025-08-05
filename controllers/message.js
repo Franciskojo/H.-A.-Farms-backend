@@ -35,7 +35,7 @@ export const sendMessage = async (req, res, next) => {
 
     // ✅ Respond with success
     res.status(201).json({
-      message: "Your message has been received", message
+      message: "Your message has been received", data: message
     });
 
   } catch (error) {
