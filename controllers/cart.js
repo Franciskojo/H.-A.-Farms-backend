@@ -245,7 +245,7 @@ export const checkoutCart = async (req, res) => {
     `).join('');
 
     await mailTransport.sendMail({
-      to: value.email,
+      to: process.env.EMAIL_USER,
       subject: 'New Order – H.A. Farms',
       html: `
         <h2>New Order Received</h2>
