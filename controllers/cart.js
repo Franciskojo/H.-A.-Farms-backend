@@ -283,7 +283,7 @@ await mailTransport.sendMail({
         </p>
 
         <div style="margin-top: 30px;">
-          <a href="https://yourdomain.com/admin/dashboard" style="
+          <a href="login.html" style="
             display: inline-block;
             background-color: #4a8f29;
             color: white;
