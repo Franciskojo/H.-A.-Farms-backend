@@ -62,7 +62,21 @@ export const registerUser = async (req, res, next) => {
           <p style="font-size: 16px;"><strong>H. A. Farms Team</strong></p>
         </div>
         <div style="background-color: #e67e22; color: white; text-align: center; padding: 15px;">
-          <p style="margin: 0; font-size: 14px;">Follow us for updates & offers – H. A. Farms</p>
+          <p style="margin: 0; font-size: 14px;">Follow us for updates & offers</p>
+          <div style="margin-top: 10px;">
+            <a href="https://www.facebook.com/share/18Y9SyVPVZ/" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://www.instagram.com/reel/DG8t7bSM8lk/?igsh=cnF2bnJqNWtjNnMx" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="https://x.com/HAFARMS1?t=7EC4HIYV3PUszVxEQk2lXQ&s=08" style="margin: 0 8px;" target="_blank">
+              <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" width="24" height="24" style="vertical-align: middle;">
+            </a>
+            <a href="mailto:support@hafarms.com" style="margin: 0 8px;">
+              <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Email" width="24" height="24" style="vertical-align: middle;">
+            </a>
+          </div>
         </div>
       </div>
     </div>
