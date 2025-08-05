@@ -241,24 +241,26 @@ export const checkoutCart = async (req, res) => {
     /* ------------------------------------------------------------------
        5️⃣ EMAIL NOTIFICATION TO SELLER
     ------------------------------------------------------------------ */
-    const itemsHtml = order.items.map(i => `
-      <li>
-        <strong>${i.nameAtPurchase}</strong><br/>
-        Qty: ${i.quantity} × GH₵${i.priceAtPurchase.toFixed(2)}<br/>
-        Subtotal: GH₵${(i.quantity * i.priceAtPurchase).toFixed(2)}
-      </li>
-    `).join('');
+ const itemsHtml = order.items.map(i => `
+  <li style="margin-bottom:10px;">
+    <strong>${i.nameAtPurchase}</strong><br/>
+    Qty: ${i.quantity} × GH₵${i.priceAtPurchase.toFixed(2)}<br/>
+    Subtotal: GH₵${(i.quantity * i.priceAtPurchase).toFixed(2)}
+  </li>
+`).join('');
 
-    await mailTransport.sendMail({
-      to: process.env.EMAIL_USER,
-      subject: 'New Order – H.A. Farms',
-      html: `
-        <h2>New Order Received</h2>
+await mailTransport.sendMail({
+  to: process.env.EMAIL_USER,
+  subject: 'New Order – H.A. Farms',
+  html: `
+    <div style="font-family: Arial, sans-serif; background-color: #f8f1e5; padding: 30px;">
+      <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h2 style="color: #4a8f29;">🛒 New Order Received – H.A. Farms</h2>
 
-        <h3>Customer Info</h3>
-        <p>Customer: ${user.name} (ID: ${user._id})</p>
+        <h3 style="color: #4a8f29;">Customer Info</h3>
+        <p>Customer: <strong>${user.name}</strong> (ID: ${user._id})</p>
 
-        <h3>Shipping Address</h3>
+        <h3 style="color: #4a8f29;">Shipping Address</h3>
         <p>
           ${shippingAddress.streetAddress}, ${shippingAddress.town}, ${shippingAddress.region}<br/>
           Digital Address: ${shippingAddress.digitalAddress || '-'}<br/>
@@ -266,23 +268,38 @@ export const checkoutCart = async (req, res) => {
           Phone: ${shippingAddress.phone || '-'}
         </p>
 
-        <h3>Order Items</h3>
-        <ul style="list-style:none;padding:0">${itemsHtml}</ul>
+        <h3 style="color: #4a8f29;">Order Items</h3>
+        <ul style="list-style: none; padding: 0;">${itemsHtml}</ul>
 
-        <h3>Payment</h3>
+        <h3 style="color: #4a8f29;">Payment</h3>
         <p>Method: ${paymentMethod.replace(/_/g, ' ')}</p>
 
-        <h3>Totals</h3>
+        <h3 style="color: #4a8f29;">Totals</h3>
         <p>
           Subtotal: GH₵${subtotal.toFixed(2)}<br/>
           Shipping: GH₵${shipping.toFixed(2)}<br/>
           Tax: GH₵${tax.toFixed(2)}<br/>
-          <strong>Total: GH₵${total.toFixed(2)}</strong>
+          <strong style="font-size: 16px;">Total: GH₵${total.toFixed(2)}</strong>
         </p>
 
-        <p>Login to the admin dashboard to view or update this order.</p>
-      `
-    });
+        <div style="margin-top: 30px;">
+          <a href="https://yourdomain.com/admin/dashboard" style="
+            display: inline-block;
+            background-color: #4a8f29;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+          ">Login to Admin Dashboard</a>
+        </div>
+
+        <p style="margin-top: 20px; color: #888;">You are receiving this email because a customer placed a new order.</p>
+      </div>
+    </div>
+  `
+});
+
 
     /* ------------------------------------------------------------------
        6️⃣  OPTIONAL CUSTOMER CONFIRMATION
