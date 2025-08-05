@@ -197,7 +197,7 @@ export const checkoutCart = async (req, res) => {
     }
 
     // Fetch user info
-    const user = await UserModel.findById(userId).select('username email');
+    const user = await UserModel.findById(userId).select('name email');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     // 1️⃣ Fetch cart
