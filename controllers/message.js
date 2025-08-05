@@ -28,7 +28,6 @@ export const sendMessage = async (req, res, next) => {
         <h3>New Message from ${value.name}</h3>
         <p><strong>Email:</strong> ${value.email}</p>
         <p><strong>Message:</strong><br/>${value.message}</p>
-        <p><em>Login to your dashboard to reply or mark as read.</em></p>
       `
     });
 
