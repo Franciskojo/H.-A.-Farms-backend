@@ -195,6 +195,10 @@ export const checkoutCart = async (req, res) => {
       return res.status(400).json({ message: 'Required fields are missing' });
     }
 
+    // Fetch user info
+    const user = await UserModel.findById(userId).select('username email');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
     // 1️⃣ Fetch cart
     const cart = await CartModel.findOne({ user: userId })
       .populate('items.product', 'productName productImage price');
@@ -251,14 +255,14 @@ export const checkoutCart = async (req, res) => {
         <h2>New Order Received</h2>
 
         <h3>Customer Info</h3>
-        <p>User ID: ${userId}</p>
+        <p>Customer: ${user.name} (ID: ${user._id})</p>
 
         <h3>Shipping Address</h3>
         <p>
-          ${shipping.streetAddress}, ${shipping.town}, ${shipping.region}<br/>
-          Digital Address: ${shipping.digitalAddress || '-'}<br/>
-          Country: ${shipping.country || '-'}<br/>
-          Phone: ${shipping.phone || '-'}
+          ${shippingAddress.streetAddress}, ${shippingAddress.town}, ${shippingAddress.region}<br/>
+          Digital Address: ${shippingAddress.digitalAddress || '-'}<br/>
+          Country: ${shippingAddress.country || '-'}<br/>
+          Phone: ${shippingAddress.phone || '-'}
         </p>
 
         <h3>Order Items</h3>
