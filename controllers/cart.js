@@ -3,6 +3,7 @@ import { ProductModel } from "../models/product.js";
 import { OrderModel } from "../models/order.js";
 import { mailTransport } from "../utils/mail.js";
 import mongoose from "mongoose";
+import { UserModel } from "../models/user.js";
 
 // Get cart
 export const getCart = async (req, res) => {
