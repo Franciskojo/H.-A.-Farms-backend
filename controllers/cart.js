@@ -194,6 +194,7 @@ export const checkoutCart = async (req, res) => {
       return res.status(400).json({ message: 'Required fields are missing' });
     }
 
+    // 1️⃣ Fetch cart
     const cart = await CartModel.findOne({ user: userId })
       .populate('items.product', 'productName productImage price');
 
@@ -201,6 +202,7 @@ export const checkoutCart = async (req, res) => {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
+    // 2️⃣ Build order items
     const orderItems = cart.items.map(item => {
       if (!item.product) throw new Error('Product missing');
       return {
@@ -213,7 +215,8 @@ export const checkoutCart = async (req, res) => {
 
     const { subtotal, tax, shipping, total } = cart;
 
-    const order = new OrderModel({
+    // 3️⃣ Create order
+    const order = await OrderModel.create({
       user: userId,
       items: orderItems,
       subtotal,
@@ -226,9 +229,72 @@ export const checkoutCart = async (req, res) => {
       status: 'processing'
     });
 
-    await order.save();
+    // 4️⃣ Clear cart
     await CartModel.findOneAndUpdate({ user: userId }, { items: [] });
 
+    /* ------------------------------------------------------------------
+       5️⃣ EMAIL NOTIFICATION TO SELLER
+    ------------------------------------------------------------------ */
+    const itemsHtml = order.items.map(i => `
+      <li>
+        <strong>${i.nameAtPurchase}</strong><br/>
+        Qty: ${i.quantity} × GH₵${i.priceAtPurchase.toFixed(2)}<br/>
+        Subtotal: GH₵${(i.quantity * i.priceAtPurchase).toFixed(2)}
+      </li>
+    `).join('');
+
+    await mailTransport.sendMail({
+      to: value.email,
+      subject: 'New Order – H.A. Farms',
+      html: `
+        <h2>New Order Received</h2>
+
+        <h3>Customer Info</h3>
+        <p>User ID: ${userId}</p>
+
+        <h3>Shipping Address</h3>
+        <p>
+          ${shipping.streetAddress}, ${shipping.town}, ${shipping.region}<br/>
+          Digital Address: ${shipping.digitalAddress || '-'}<br/>
+          Country: ${shipping.country || '-'}<br/>
+          Phone: ${shipping.phone || '-'}
+        </p>
+
+        <h3>Order Items</h3>
+        <ul style="list-style:none;padding:0">${itemsHtml}</ul>
+
+        <h3>Payment</h3>
+        <p>Method: ${paymentMethod.replace(/_/g, ' ')}</p>
+
+        <h3>Totals</h3>
+        <p>
+          Subtotal: GH₵${subtotal.toFixed(2)}<br/>
+          Shipping: GH₵${shipping.toFixed(2)}<br/>
+          Tax: GH₵${tax.toFixed(2)}<br/>
+          <strong>Total: GH₵${total.toFixed(2)}</strong>
+        </p>
+
+        <p>Login to the admin dashboard to view or update this order.</p>
+      `
+    });
+
+    /* ------------------------------------------------------------------
+       6️⃣  OPTIONAL CUSTOMER CONFIRMATION
+    ------------------------------------------------------------------ */
+    if (process.env.CUSTOMER_CONFIRMATION === 'true' && req.user?.email) {
+      await mailTransport.sendMail({
+        to: req.user.email,
+        subject: 'Your H.A. Farms Order Confirmation',
+        html: `
+          <h2>Thank you for your order!</h2>
+          <p>Order ID: ${order._id}</p>
+          <p>Total: GH₵${total.toFixed(2)}</p>
+          <p>We'll notify you when your items are on the way.</p>
+        `
+      });
+    }
+
+    // 7️⃣ Respond to frontend
     res.status(201).json({
       message: 'Order created successfully',
       order: {
