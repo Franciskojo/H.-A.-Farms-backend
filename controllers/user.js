@@ -43,10 +43,32 @@ export const registerUser = async (req, res, next) => {
 
     // Send welcome email
     await mailTransport.sendMail({
-      to: value.email,
-      subject: "Welcome to H. A. Farms!",
-      text: `Hello ${value.name},\n\nThank you for signing up! We're excited to have you on board.\n\nBest regards,\nH. A. Farms`
-    });
+  to: value.email,
+  subject: "Welcome to H. A. Farms!",
+  text: `Hello ${value.name},\n\nThank you for signing up! We're excited to have you on board.\n\nBest regards,\nH. A. Farms`,
+  html: `
+    <div style="font-family: Arial, sans-serif; background-color: #f8f1e5; padding: 20px;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
+        <div style="background-color: #4a8f29; color: white; padding: 20px;">
+          <h2 style="margin: 0;">🎉 Welcome to H. A. Farms, ${value.name}!</h2>
+        </div>
+        <div style="padding: 20px; color: #2c3e50;">
+          <p style="font-size: 16px;">Hello <strong>${value.name}</strong>,</p>
+          <p style="font-size: 16px;">Thank you for signing up with <strong>H. A. Farms</strong>! We're thrilled to have you as part of our community.</p>
+          <p style="font-size: 16px;">Stay tuned for fresh products, exciting updates, and more.</p>
+          <p style="font-size: 16px;">If you ever need help, we're just an email away.</p>
+          <br>
+          <p style="font-size: 16px;">Best regards,</p>
+          <p style="font-size: 16px;"><strong>H. A. Farms Team</strong></p>
+        </div>
+        <div style="background-color: #e67e22; color: white; text-align: center; padding: 15px;">
+          <p style="margin: 0; font-size: 14px;">Follow us for updates & offers – H. A. Farms</p>
+        </div>
+      </div>
+    </div>
+  `
+});
+
 
     // Send response
     res.status(201).json({
