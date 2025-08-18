@@ -19,7 +19,7 @@ export const sendMessage = async (req, res, next) => {
      // ✅ Notify seller
     await mailTransport.sendMail({
       to: value.email,
-      subject: 'New Customer Message – H.A. Farms',
+      subject: 'New Customer Message – H.A. Farmsgh',
       text: `
         New message from ${value.name} (${value.email}):
         ${value.message}
@@ -28,7 +28,7 @@ export const sendMessage = async (req, res, next) => {
   <div style="font-family: Arial, sans-serif; background-color: #f8f1e5; padding: 20px; border: 1px solid #ddd;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 6px; overflow: hidden;">
       <div style="background-color: #4a8f29; color: white; padding: 15px 20px;">
-        <h2 style="margin: 0;">📩 New Customer Message – H.A. Farms</h2>
+        <h2 style="margin: 0;">📩 New Customer Message – H.A. Farmsgh</h2>
       </div>
       <div style="padding: 20px;">
         <p style="font-size: 16px; color: #2c3e50;"><strong>From:</strong> ${value.name}</p>
@@ -38,7 +38,7 @@ export const sendMessage = async (req, res, next) => {
         <p style="font-size: 16px; color: #2c3e50; line-height: 1.6;">${value.message}</p>
       </div>
       <div style="background-color: #e67e22; color: white; text-align: center; padding: 10px;">
-        <p style="margin: 0; font-size: 14px;">This message was sent from the H.A. Farms website</p>
+        <p style="margin: 0; font-size: 14px;">This message was sent from the H.A. Farmsgh website (www.hafarmsgh.com)</p>
       </div>
     </div>
   </div>

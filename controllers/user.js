@@ -44,22 +44,22 @@ export const registerUser = async (req, res, next) => {
     // Send welcome email
     await mailTransport.sendMail({
   to: value.email,
-  subject: "Welcome to H. A. Farms!",
-  text: `Hello ${value.name},\n\nThank you for signing up! We're excited to have you on board.\n\nBest regards,\nH. A. Farms`,
+  subject: "Welcome to H. A. Farmsgh!",
+  text: `Hello ${value.name},\n\nThank you for signing up! We're excited to have you on board.\n\nBest regards,\nH. A. Farmsgh`,
   html: `
     <div style="font-family: Arial, sans-serif; background-color: #f8f1e5; padding: 20px;">
       <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
         <div style="background-color: #4a8f29; color: white; padding: 20px;">
-          <h2 style="margin: 0;">🎉 Welcome to H. A. Farms, ${value.name}!</h2>
+          <h2 style="margin: 0;">🎉 Welcome to H. A. Farmsgh, ${value.name}!</h2>
         </div>
         <div style="padding: 20px; color: #2c3e50;">
           <p style="font-size: 16px;">Hello <strong>${value.name}</strong>,</p>
-          <p style="font-size: 16px;">Thank you for signing up with <strong>H. A. Farms</strong>! We're thrilled to have you as part of our community.</p>
+          <p style="font-size: 16px;">Thank you for signing up with <strong>H. A. Farmsgh</strong>! We're thrilled to have you as part of our community.</p>
           <p style="font-size: 16px;">Stay tuned for fresh products, exciting updates, and more.</p>
           <p style="font-size: 16px;">If you ever need help, we're just an email away.</p>
           <br>
           <p style="font-size: 16px;">Best regards,</p>
-          <p style="font-size: 16px;"><strong>H. A. Farms Team</strong></p>
+          <p style="font-size: 16px;"><strong>H. A. Farmsgh Team</strong></p>
         </div>
         <div style="background-color: #e67e22; color: white; text-align: center; padding: 15px;">
           <p style="margin: 0; font-size: 14px;">Follow us for updates & offers</p>
@@ -73,7 +73,7 @@ export const registerUser = async (req, res, next) => {
             <a href="https://x.com/HAFARMS1?t=7EC4HIYV3PUszVxEQk2lXQ&s=08" style="margin: 0 8px;" target="_blank">
               <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" width="24" height="24" style="vertical-align: middle;">
             </a>
-            <a href="mailto:support@hafarms.com" style="margin: 0 8px;">
+            <a href="mailto:support@hafarmsgh.com" style="margin: 0 8px;">
               <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Email" width="24" height="24" style="vertical-align: middle;">
             </a>
           </div>
